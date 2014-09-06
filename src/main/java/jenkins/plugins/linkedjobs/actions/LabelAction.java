@@ -29,9 +29,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import jenkins.plugins.linkedjobs.extensions.PluginSettings;
+import jenkins.plugins.linkedjobs.settings.LabelPluginSettings;
 import jenkins.plugins.linkedjobs.model.JobsGroup;
-
 import jenkins.model.Jenkins;
 import hudson.model.Action;
 import hudson.model.TopLevelItem;
@@ -40,8 +39,7 @@ import hudson.model.Label;
 import hudson.model.labels.LabelAtom;
 
 /**
- * This class is the main purpose of this plugin.
- * For each Label, Jenkins associates an object of this class to a Linked Jobs page.
+ * For each Label, Jenkins associates an object of this class to a Linked Jobs page.<br/><br/>
  * This class is responsible for building & collecting the data necessary to build
  * this additional page. Besides boiler-plate code for pure UI purpose, the interesting
  * function is getJobsGroups, which scans all Jobs/Projects of this Jenkins instance
@@ -55,16 +53,10 @@ public class LabelAction implements Action {
      */
     private final LabelAtom label;
 
-    /**
-     * access to the toggle to decide the display of condensed/detailed projects view
-     */
-    private final PluginSettings pluginSettings;
-
-    public LabelAction(LabelAtom labelAtom, PluginSettings pluginSettings) {
+    public LabelAction(LabelAtom labelAtom) {
         // for now only store the label
         // calculation is done when requested by display
         this.label = labelAtom;
-        this.pluginSettings = pluginSettings;
     }
 
     public String getIconFileName() {
@@ -92,7 +84,7 @@ public class LabelAction implements Action {
     }
 
     public boolean getDetailedView() {
-        return pluginSettings.getDetailedView();
+        return LabelPluginSettings.getDetailedView();
     }
 
     /**

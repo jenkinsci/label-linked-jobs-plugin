@@ -27,11 +27,8 @@ package jenkins.plugins.linkedjobs.extensions;
 import java.util.Collection;
 import java.util.Collections;
 
-import net.sf.json.JSONObject;
-
 import jenkins.plugins.linkedjobs.actions.LabelAction;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 
 import hudson.Extension;
 import hudson.model.Action;
@@ -40,10 +37,13 @@ import hudson.model.labels.LabelAtomProperty;
 import hudson.model.labels.LabelAtomPropertyDescriptor;
 
 /**
- * Extension point of this plugin
- * two main roles:
- *  - add an Action, which makes an additional link available for Labels in the left-hand side menuy
- *  - define the Descriptor class, which manages the plugin configuration
+ * ExtensionPoint of this plugin<BR/>
+ * Two main roles:
+ * <ul><li>add an Action, which makes an additional link available for Labels in the left-hand side menu</li>
+ * <li>define the Descriptor class, which manages the plugin configuration <i>per label</i> - that is,
+ * returning the name of the option to activate the plugin for that label.
+ * See <code>LabelConfigurationDescriptor.getDisplayName()</code></li>
+ * </ul>
  * @author dominiquebrice
  */
 public class LabelExtension extends LabelAtomProperty {
@@ -55,45 +55,24 @@ public class LabelExtension extends LabelAtomProperty {
     @Override
     public Collection<? extends Action> getActions(LabelAtom labelAtom) {
         // extend the left-side menu for Label with our new action/page
-        return Collections.singleton(new LabelAction(labelAtom, getPluginSettings()));
+        return Collections.singleton(new LabelAction(labelAtom));
     }
     
-    public PluginSettings getPluginSettings() {
-        return (PluginSettings)super.getDescriptor();
-    }
-    
+    /**
+     * Since the plugin configuration is handled globally by LabelPluginSettings,
+     * the sole role of this descriptor is to define getDisplayName()
+     * @author domi
+     *
+     */
     @Extension
-    public static final class LabelPluginDescriptor extends LabelAtomPropertyDescriptor implements PluginSettings {
-        
-        private boolean detailedView = true;
-        
-        /**
-         * In order to load the persisted global configuration, we have to 
-         * call load() in the constructor.
-         */
-        public LabelPluginDescriptor() {
-            load();
-        }
-        
+    public static final class LabelConfigurationDescriptor extends LabelAtomPropertyDescriptor {
+
         @Override
         public String getDisplayName() {
             // this string is displayed on the "Configure" page of labels
             // next to a checkbox that activates the plugin for that particular label
             // when checked, this leads to a call to getActions with the label as parameter
             return "Activate plugin to list projects linked to this label";
-        }
-        
-        @Override
-        public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-            // To persist global configuration information,
-            // set that to properties and call save().
-            detailedView = formData.getBoolean("detailedView");
-            save();
-            return super.configure(req,formData);
-        }
-        
-        public boolean getDetailedView() {
-            return detailedView;   
         }
     }
 }

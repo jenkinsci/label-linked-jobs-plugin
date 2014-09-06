@@ -39,7 +39,7 @@ public class LabelActionTest {
     
     @Test
     public void testIsAssignedLabelLinkedEdgeCases() throws Exception {
-        LabelAction action = new LabelAction(new LabelAtom("jdk7"), null);
+        LabelAction action = new LabelAction(new LabelAtom("jdk7"));
         Assert.assertFalse("isAssignedLabelLinked fails when called with null", action.isAssignedLabelLinked(null));
         Assert.assertFalse("isAssignedLabelLinked is confused when name matches partially", action.isAssignedLabelLinked(new LabelAtom("jdk71")));
         Assert.assertFalse("isAssignedLabelLinked is confused when name matches partially", action.isAssignedLabelLinked(new LabelAtom("jdk")));
@@ -47,7 +47,7 @@ public class LabelActionTest {
     
     @Test
     public void testIsAssignedLabelLinked() throws Exception {
-        LabelAction action = new LabelAction(new LabelAtom("jdk7"), null);
+        LabelAction action = new LabelAction(new LabelAtom("jdk7"));
         Assert.assertTrue(action.isAssignedLabelLinked(Label.parseExpression("jdk7")));
         Assert.assertTrue(action.isAssignedLabelLinked(Label.parseExpression("jdk7&&macos")));
         Assert.assertTrue(action.isAssignedLabelLinked(Label.parseExpression("macos&&jdk7")));

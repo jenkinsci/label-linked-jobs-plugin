@@ -28,6 +28,8 @@ import hudson.Extension;
 import hudson.model.RootAction;
 
 /**
+ * Action (and ExtensionPoint!) responsible for the display of the Labels Dashboard plugin page.
+ * Scans all jobs and nodes of this jenkins instance to extract all used (and unused) labels
  * @author dominiquebrice
  */
 @Extension
