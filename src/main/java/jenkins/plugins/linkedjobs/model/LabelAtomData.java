@@ -30,7 +30,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 
-public class LabelAtomData {
+public class LabelAtomData implements Comparable<LabelAtomData> {
 
     private final LabelAtom label;
     // list of jobs sharing this label
@@ -70,5 +70,13 @@ public class LabelAtomData {
     
     public int getNodesCount() {
         return nodes.size();
+    }
+
+    /************************************
+     * Comparable interface implementation
+     ************************************/
+    
+    public int compareTo(LabelAtomData o) {
+        return this.label.compareTo(o.label);
     }
 }

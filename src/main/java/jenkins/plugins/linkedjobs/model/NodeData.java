@@ -30,7 +30,7 @@ import jenkins.model.Jenkins;
 import hudson.model.AbstractProject;
 import hudson.model.Node;
 
-public class NodeData {
+public class NodeData implements Comparable<NodeData> {
 
     private Node node;
     // list of jobs using this node directly (by label)
@@ -63,5 +63,13 @@ public class NodeData {
     
     public int getJobsCount() {
         return jobs.size();
+    }
+
+    /************************************
+     * Comparable interface implementation
+     ************************************/
+    
+    public int compareTo(NodeData o) {
+        return this.getName().compareTo(o.getName());
     }
 }

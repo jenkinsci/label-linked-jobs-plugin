@@ -26,13 +26,17 @@ package jenkins.plugins.linkedjobs.actions;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 import jenkins.model.Jenkins;
 import jenkins.plugins.linkedjobs.model.LabelAtomData;
 import jenkins.plugins.linkedjobs.model.NodeData;
+import jenkins.plugins.linkedjobs.settings.LabelPluginSettings;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Label;
@@ -61,14 +65,18 @@ public class LabelDashboardAction implements RootAction {
         return "labelsdashboard";
     }
     
+    public boolean getDashboardOrphanedJobsDetailedView() {
+        return LabelPluginSettings.getDashboardOrphanedJobsDetailedView();
+    }
+    
     /**
      * This function scans all jobs and all nodes of this Jenkins instance
      * to extract all LabelAtom defined. Goal is to list, per LabelAtom, all jobs
      * and all nodes associated to it.
      * It ignores nodes' self labels, that are managed by getNodesData()
      */
-    public Collection<LabelAtomData> getLabelsData() {
-        HashMap<LabelAtom, LabelAtomData> result = new HashMap<LabelAtom, LabelAtomData>();
+    public List<LabelAtomData> getLabelsData() {
+        HashMap<LabelAtom, LabelAtomData> tmpResult = new HashMap<LabelAtom, LabelAtomData>();
         
         // build a list of all the nodes self labels
         HashSet<LabelAtom> nodesSelfLabels = new HashSet<LabelAtom>();
@@ -88,25 +96,30 @@ public class LabelDashboardAction implements RootAction {
                         // see getNodesData()
                         continue;
                     }
-                    if (!result.containsKey(label)) {
-                        result.put(label, new LabelAtomData(label));
+                    if (!tmpResult.containsKey(label)) {
+                        tmpResult.put(label, new LabelAtomData(label));
                     }
-                    result.get(label).add(job);
+                    tmpResult.get(label).add(job);
                 }
             }
         }
         
-        // list all LabelAtom defined by all nodes, including Jenkins master node
-        listNodeLabels(nodesSelfLabels, result, Jenkins.getInstance());
+        // list all LabelAtom defined by all nodes, including Jenkins master node,
+        // but ignore nodes' self labels. See listNodeLabels()
+        listNodeLabels(nodesSelfLabels, tmpResult, Jenkins.getInstance());
         for (Node node : Jenkins.getInstance().getNodes()) {
-            listNodeLabels(nodesSelfLabels, result, node);
+            listNodeLabels(nodesSelfLabels, tmpResult, node);
         }
         
-        return result.values();
+        ArrayList<LabelAtomData> result = new ArrayList<LabelAtomData>();
+        result.addAll(tmpResult.values());
+        // sort labels alphabetically by name
+        Collections.sort(result);
+        return result;
     }
     
     // this function finds all jobs that can't run on any nodes
-    // because of labels configuration
+    // because of labels (mis-)configuration
     public ArrayList<AbstractProject<?, ?>> getOrphanedJobs() {
         ArrayList<AbstractProject<?, ?>> orphanedJobs = new ArrayList<AbstractProject<?,?>>();
 
@@ -141,6 +154,13 @@ public class LabelDashboardAction implements RootAction {
             }
         }
 
+        // sort list by jobs names
+        Collections.sort(orphanedJobs,
+          new Comparator<AbstractProject<?, ?>>() {
+            public int compare(AbstractProject<?, ?> o1, AbstractProject<?, ?> o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
         return orphanedJobs;
     }
     
@@ -149,29 +169,33 @@ public class LabelDashboardAction implements RootAction {
      * using nodes' self labels
      */
     public Collection<NodeData> getNodesData() {
-        HashMap<LabelAtom, NodeData> result = new HashMap<LabelAtom, NodeData>();
+        HashMap<LabelAtom, NodeData> tmpResult = new HashMap<LabelAtom, NodeData>();
         
         // prefill the results with all nodes
-        result.put(Jenkins.getInstance().getSelfLabel(),
+        tmpResult.put(Jenkins.getInstance().getSelfLabel(),
                 new NodeData(Jenkins.getInstance()));
         for (Node node : Jenkins.getInstance().getNodes()) {
-            result.put(node.getSelfLabel(), new NodeData(node));
+            tmpResult.put(node.getSelfLabel(), new NodeData(node));
         }
         
         // This loop is directly inspired from hudson.model.Label.getTiedJobs()
-        // Find all jobs that are using directly some nodes self labels
+        // Find all jobs that are using directly some nodes' self labels
         for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
             if (job instanceof TopLevelItem) {
                 for (LabelAtom label : job.getAssignedLabel().listAtoms()) {
-                    if (result.containsKey(label)) {
-                        // ok, this corresponds to a node self label. Let's use it
-                        result.get(label).add(job);
+                    if (tmpResult.containsKey(label)) {
+                        // ok, this corresponds to a node's self label. Let's use it
+                        tmpResult.get(label).add(job);
                     }
                 }
             }
         }
         
-        return result.values();
+        ArrayList<NodeData> result = new ArrayList<NodeData>();
+        result.addAll(tmpResult.values());
+        // sort nodes alphabetically by display name
+        Collections.sort(result);
+        return result;
     }
     
     private void listNodeLabels(HashSet<LabelAtom> nodesSelfLabels,

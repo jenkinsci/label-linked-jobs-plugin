@@ -45,6 +45,10 @@ public class LabelPluginSettings extends AbstractDescribableImpl<LabelPluginSett
         return getDescriptorImpl().getDetailedView();
     }
     
+    public static boolean getDashboardOrphanedJobsDetailedView() {
+        return getDescriptorImpl().getDashboardOrphanedJobsDetailedView();
+    }
+    
     private static LabelPluginDescriptorImpl getDescriptorImpl() {
         return (LabelPluginDescriptorImpl)(Jenkins.getInstance().getDescriptorByType(LabelPluginDescriptorImpl.class));
     }
@@ -64,6 +68,12 @@ public class LabelPluginSettings extends AbstractDescribableImpl<LabelPluginSett
         private boolean detailedView = true;
         
         /**
+         * toggle to determiner whether the jobs should be listed in a condensed way or not on the
+         * Labels Dashboard
+         */
+        private boolean dashboardOrphanedJobsDetailedView = true;
+        
+        /**
          * In order to load the persisted global configuration, we have to 
          * call load() in the constructor.
          */
@@ -81,12 +91,17 @@ public class LabelPluginSettings extends AbstractDescribableImpl<LabelPluginSett
             // To persist global configuration information,
             // set that to properties and call save().
             detailedView = formData.getBoolean("detailedView");
+            dashboardOrphanedJobsDetailedView = formData.getBoolean("dashboardOrphanedJobsDetailedView");
             save();
             return super.configure(req,formData);
         }
         
         public boolean getDetailedView() {
             return detailedView;   
+        }
+        
+        public boolean getDashboardOrphanedJobsDetailedView() {
+            return dashboardOrphanedJobsDetailedView;   
         }
     }
 }
