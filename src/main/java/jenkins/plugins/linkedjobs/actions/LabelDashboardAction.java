@@ -89,18 +89,24 @@ public class LabelDashboardAction implements RootAction {
         // List all LabelAtom used by all jobs, except nodes self labels that are
         // processed in getNodesData()
         for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
-            if (job instanceof TopLevelItem) {
-                for (LabelAtom label : job.getAssignedLabel().listAtoms()) {
-                    if (nodesSelfLabels.contains(label)) {
-                        // skip label that corresponds to a node name
-                        // see getNodesData()
-                        continue;
-                    }
-                    if (!tmpResult.containsKey(label)) {
-                        tmpResult.put(label, new LabelAtomData(label));
-                    }
-                    tmpResult.get(label).add(job);
+            if (!(job instanceof TopLevelItem)) {
+                continue;
+            }
+            if (job.getAssignedLabel() == null) {
+                // should we do something particular for jobs with no labels?
+                continue;
+            }
+
+            for (LabelAtom label : job.getAssignedLabel().listAtoms()) {
+                if (nodesSelfLabels.contains(label)) {
+                    // skip label that corresponds to a node name
+                    // see getNodesData()
+                    continue;
                 }
+                if (!tmpResult.containsKey(label)) {
+                    tmpResult.put(label, new LabelAtomData(label));
+                }
+                tmpResult.get(label).add(job);
             }
         }
         
@@ -181,12 +187,18 @@ public class LabelDashboardAction implements RootAction {
         // This loop is directly inspired from hudson.model.Label.getTiedJobs()
         // Find all jobs that are using directly some nodes' self labels
         for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
-            if (job instanceof TopLevelItem) {
-                for (LabelAtom label : job.getAssignedLabel().listAtoms()) {
-                    if (tmpResult.containsKey(label)) {
-                        // ok, this corresponds to a node's self label. Let's use it
-                        tmpResult.get(label).add(job);
-                    }
+            if (!(job instanceof TopLevelItem)) {
+                continue;
+            }
+            
+            if (job.getAssignedLabel() == null) {
+                continue;
+            }
+            
+            for (LabelAtom label : job.getAssignedLabel().listAtoms()) {
+                if (tmpResult.containsKey(label)) {
+                    // ok, this corresponds to a node's self label. Let's use it
+                    tmpResult.get(label).add(job);
                 }
             }
         }
