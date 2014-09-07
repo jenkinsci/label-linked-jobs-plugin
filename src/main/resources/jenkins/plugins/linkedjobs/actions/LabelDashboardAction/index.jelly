@@ -33,7 +33,23 @@ THE SOFTWARE.
     <st:include it="${app}" page="sidepanel.jelly"/>
 
     <l:main-panel>
-Hello, ${it.displayName}!
+    
+      <h2>Labels</h2>
+      <j:set var="labels" value="${it.labelsData}" />
+      <j:forEach var="label" items="${labels}">
+        <div>
+          <j:set var="jobCount" value="${label.jobsCount}" />
+          <j:set var="nodeCount" value="${label.nodesCount}" />
+          <h3><a href="${rootURL}/${label.labelURL}">${label.label}</a></h3>
+          This label is used by ${jobCount} job<j:if test="${jobCount > 1}">s</j:if>.
+          <j:if test="${jobCount == 0}"><b><font color="red">You should verify your configuration.</font></b></j:if><br/>
+          This label is defined by ${nodeCount} node<j:if test="${nodeCount > 1}">s</j:if>.
+          <j:if test="${nodeCount == 0}"><b><font color="red">You should verify your configuration.</font></b></j:if>
+        </div>
+      </j:forEach>
+      
+      <h2>Nodes</h2>
+      to be done
     </l:main-panel>
 
   </l:layout>
