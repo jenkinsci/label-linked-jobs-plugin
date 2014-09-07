@@ -24,13 +24,18 @@
 
 package jenkins.plugins.linkedjobs.actions;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 
 import jenkins.model.Jenkins;
 import jenkins.plugins.linkedjobs.model.LabelAtomData;
+import jenkins.plugins.linkedjobs.model.NodeData;
 import hudson.Extension;
 import hudson.model.AbstractProject;
+import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 import hudson.model.RootAction;
@@ -59,16 +64,30 @@ public class LabelDashboardAction implements RootAction {
     /**
      * This function scans all jobs and all nodes of this Jenkins instance
      * to extract all LabelAtom defined. Goal is to list, per LabelAtom, all jobs
-     * and all nodes associated to it
+     * and all nodes associated to it.
+     * It ignores nodes' self labels, that are managed by getNodesData()
      */
     public Collection<LabelAtomData> getLabelsData() {
         HashMap<LabelAtom, LabelAtomData> result = new HashMap<LabelAtom, LabelAtomData>();
         
+        // build a list of all the nodes self labels
+        HashSet<LabelAtom> nodesSelfLabels = new HashSet<LabelAtom>();
+        nodesSelfLabels.add(Jenkins.getInstance().getSelfLabel());
+        for (Node node : Jenkins.getInstance().getNodes()) {
+            nodesSelfLabels.add(node.getSelfLabel());
+        }
+        
         // This loop is directly inspired from hudson.model.Label.getTiedJobs()
-        // List all LabelAtom used by all jobs
+        // List all LabelAtom used by all jobs, except nodes self labels that are
+        // processed in getNodesData()
         for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
             if (job instanceof TopLevelItem) {
                 for (LabelAtom label : job.getAssignedLabel().listAtoms()) {
+                    if (nodesSelfLabels.contains(label)) {
+                        // skip label that corresponds to a node name
+                        // see getNodesData()
+                        continue;
+                    }
                     if (!result.containsKey(label)) {
                         result.put(label, new LabelAtomData(label));
                     }
@@ -78,29 +97,98 @@ public class LabelDashboardAction implements RootAction {
         }
         
         // list all LabelAtom defined by all nodes, including Jenkins master node
-        String strNodeName = "master"; // hard-coded self label for Jenkins instance, see Jenkins.getSelfLabel()
-        for (LabelAtom label : Jenkins.getInstance().getLabelAtoms()) {
-            if (label.getName().equals(strNodeName)) {
-                continue; // ignore node's self label in this function
-            }
-            if (!result.containsKey(label)) {
-                result.put(label, new LabelAtomData(label));
-            }
-            result.get(label).add(Jenkins.getInstance());
-        }
+        listNodeLabels(nodesSelfLabels, result, Jenkins.getInstance());
         for (Node node : Jenkins.getInstance().getNodes()) {
-            strNodeName = node.getNodeName();
-            for (LabelAtom label : node.getAssignedLabels()) {
-                if (label.getName().equals(strNodeName)) {
-                    continue; // ignore node's self label in this function
+            listNodeLabels(nodesSelfLabels, result, node);
+        }
+        
+        return result.values();
+    }
+    
+    // this function finds all jobs that can't run on any nodes
+    // because of labels configuration
+    public ArrayList<AbstractProject<?, ?>> getOrphanedJobs() {
+        ArrayList<AbstractProject<?, ?>> orphanedJobs = new ArrayList<AbstractProject<?,?>>();
+
+        for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+            if (!(job instanceof TopLevelItem)) {
+                // consider only TopLevelItem - not 100% sure why, though...
+                continue;
+            }
+
+            Label jobLabel = job.getAssignedLabel();
+            if (jobLabel == null) {
+                // if job.getAssignedLabel is null then the job can run
+                // anywhere, so we're fine
+                continue;
+            }
+
+            Jenkins jenkins = Jenkins.getInstance();
+            if (jobLabel.matches(jenkins)) {
+                // this job can run on the master, skip it
+                continue;
+            }
+            
+            boolean hasMatchingNode = false;
+            Iterator<Node> i = jenkins.getNodes().iterator();
+            while (i.hasNext() && !hasMatchingNode) {
+                if (jobLabel.matches(i.next())) {
+                    hasMatchingNode = true;
                 }
-                if (!result.containsKey(label)) {
-                    result.put(label, new LabelAtomData(label));
+            }
+            if (!hasMatchingNode) {
+                orphanedJobs.add(job);
+            }
+        }
+
+        return orphanedJobs;
+    }
+    
+    /**
+     * This function scans all jobs to find those that are
+     * using nodes' self labels
+     */
+    public Collection<NodeData> getNodesData() {
+        HashMap<LabelAtom, NodeData> result = new HashMap<LabelAtom, NodeData>();
+        
+        // prefill the results with all nodes
+        result.put(Jenkins.getInstance().getSelfLabel(),
+                new NodeData(Jenkins.getInstance()));
+        for (Node node : Jenkins.getInstance().getNodes()) {
+            result.put(node.getSelfLabel(), new NodeData(node));
+        }
+        
+        // This loop is directly inspired from hudson.model.Label.getTiedJobs()
+        // Find all jobs that are using directly some nodes self labels
+        for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+            if (job instanceof TopLevelItem) {
+                for (LabelAtom label : job.getAssignedLabel().listAtoms()) {
+                    if (result.containsKey(label)) {
+                        // ok, this corresponds to a node self label. Let's use it
+                        result.get(label).add(job);
+                    }
                 }
-                result.get(label).add(node);
             }
         }
         
         return result.values();
+    }
+    
+    private void listNodeLabels(HashSet<LabelAtom> nodesSelfLabels,
+            HashMap<LabelAtom, LabelAtomData> result, Node node) {
+        // list only static labels, not dynamic labels nor the self-label
+        // so do not call Node.getAssignedLabels(), instead replicate here
+        // only the interesting part of this function, which is the Label.parse(getLabelString()) call
+        for (LabelAtom label : Label.parse(node.getLabelString())) {
+            if (nodesSelfLabels.contains(label)) {
+                // skip label that corresponds to a node name
+                // see getNodesData()
+                continue;
+            }
+            if (!result.containsKey(label)) {
+                result.put(label, new LabelAtomData(label));
+            }
+            result.get(label).add(node);
+        }
     }
 }

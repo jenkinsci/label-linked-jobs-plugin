@@ -47,9 +47,27 @@ THE SOFTWARE.
           <j:if test="${nodeCount == 0}"><b><font color="red">You should verify your configuration.</font></b></j:if>
         </div>
       </j:forEach>
-      
+      <br/><br/>
       <h2>Nodes</h2>
-      to be done
+      <j:set var="nodes" value="${it.nodesData}" />
+      <j:forEach var="node" items="${nodes}">
+        <div>
+          <j:set var="jobCount" value="${node.jobsCount}" />
+          <h3><a href="${rootURL}/${node.nodeURL}">${node.name}</a></h3>
+          This node's <a href="${rootURL}/${node.labelURL}">label</a> is used directly by ${jobCount} job<j:if test="${jobCount > 1}">s</j:if>.
+        </div>
+      </j:forEach>
+      <br/><br/>
+      <j:set var="orphanedJobs" value="${it.orphanedJobs}" />
+      <h2>Orphaned Jobs</h2>
+        <j:choose>
+          <j:when test="${empty(orphanedJobs)}">There are no orphaned jobs. Well done with your configuration!</j:when>
+          <j:otherwise>
+            The following job(s) cannot run on any node because of label (mis-)configuration. Get to it!
+            <t:projectView jobs="${orphanedJobs}"/>
+          </j:otherwise>
+        </j:choose>
+
     </l:main-panel>
 
   </l:layout>

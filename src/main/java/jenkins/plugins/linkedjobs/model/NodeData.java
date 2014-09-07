@@ -26,49 +26,42 @@ package jenkins.plugins.linkedjobs.model;
 
 import java.util.ArrayList;
 
+import jenkins.model.Jenkins;
 import hudson.model.AbstractProject;
 import hudson.model.Node;
-import hudson.model.labels.LabelAtom;
 
-public class LabelAtomData {
+public class NodeData {
 
-    private final LabelAtom label;
-    // list of jobs sharing this label
+    private Node node;
+    // list of jobs using this node directly (by label)
     private ArrayList<AbstractProject<?, ?>> jobs;
-    // list all nodes defining this label
-    private ArrayList<Node> nodes;
 
-    public LabelAtomData(LabelAtom l) {
-        label = l;
+    public NodeData(Node n) {
         jobs = new ArrayList<AbstractProject<?, ?>>();
-        nodes = new ArrayList<Node>();
+        node = n;
     }
 
     public void add(AbstractProject<?, ?> job) {
         jobs.add(job);
-    }
-
-    public void add(Node n) {
-        nodes.add(n);
     }    
     
     /************************************
      * functions used to render display in index.jelly
      ************************************/
     
-    public String getLabel() {
-        return label.getDisplayName();
+    public String getName() {
+        return node.getDisplayName();
     }
     
     public String getLabelURL() {
-        return label.getUrl();
+        return node.getSelfLabel().getUrl();
+    }
+    
+    public String getNodeURL() {
+        return Jenkins.getInstance().getComputer(node.getNodeName()).getUrl();
     }
     
     public int getJobsCount() {
         return jobs.size();
-    }
-    
-    public int getNodesCount() {
-        return nodes.size();
     }
 }
