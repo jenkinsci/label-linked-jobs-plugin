@@ -29,8 +29,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import jenkins.plugins.linkedjobs.settings.LabelPluginSettings;
 import jenkins.plugins.linkedjobs.model.JobsGroup;
+import jenkins.plugins.linkedjobs.settings.GlobalSettings;
 import jenkins.model.Jenkins;
 import hudson.model.Action;
 import hudson.model.TopLevelItem;
@@ -47,7 +47,7 @@ import hudson.model.labels.LabelAtom;
  *
  */
 public class LabelAction implements Action {
-
+    
     /**
      * The label associated to this action
      */
@@ -84,7 +84,7 @@ public class LabelAction implements Action {
     }
 
     public boolean getDetailedView() {
-        return LabelPluginSettings.getDetailedView();
+        return GlobalSettings.get().getDetailedView();
     }
 
     /**

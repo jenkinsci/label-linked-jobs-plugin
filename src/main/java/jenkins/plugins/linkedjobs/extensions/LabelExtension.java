@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import jenkins.plugins.linkedjobs.actions.LabelAction;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.Extension;
@@ -47,7 +48,7 @@ import hudson.model.labels.LabelAtomPropertyDescriptor;
  * @author dominiquebrice
  */
 public class LabelExtension extends LabelAtomProperty {
-
+    
     @DataBoundConstructor
     public LabelExtension() {
     }
