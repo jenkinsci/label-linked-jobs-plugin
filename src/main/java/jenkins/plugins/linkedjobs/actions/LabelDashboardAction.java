@@ -33,8 +33,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.inject.Inject;
-
 import jenkins.model.Jenkins;
 import jenkins.plugins.linkedjobs.model.LabelAtomData;
 import jenkins.plugins.linkedjobs.model.NodeData;

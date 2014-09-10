@@ -24,39 +24,65 @@
 
 package jenkins.plugins.linkedjobs.extensions;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 
 import jenkins.plugins.linkedjobs.actions.LabelAction;
+import jenkins.plugins.linkedjobs.actions.LabelDescriptionAction;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.Action;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelAtomProperty;
 import hudson.model.labels.LabelAtomPropertyDescriptor;
 
 /**
- * ExtensionPoint of this plugin<BR/>
- * Two main roles:
+ * One ExtensionPoint of this plugin<BR/>
+ * 
  * <ul><li>add an Action, which makes an additional link available for Labels in the left-hand side menu</li>
  * <li>define the Descriptor class, which manages the plugin configuration <i>per label</i> - that is,
- * returning the name of the option to activate the plugin for that label.
+ * returns the name of the option to activate the plugin for that label
  * See <code>LabelConfigurationDescriptor.getDisplayName()</code></li>
+ * <li>add an Action to show the Label description, if defined in the label configuration</li>
  * </ul>
  * @author dominiquebrice
  */
 public class LabelExtension extends LabelAtomProperty {
     
+    /**
+     * description of the label as entered by the user in the 
+     * label configuration page
+     */
+    private String description;
+    
+    /**
+     * This constructor is called by jenkins when the user saves
+     * the configuration page of a given label, and has selected
+     * the checkbox to activate this extension.<BR/>
+     * Checkbox displayed with <code>LabelConfigurationDescriptor.getDisplayName()</code> as a label
+     */
     @DataBoundConstructor
-    public LabelExtension() {
+    public LabelExtension(String description) {
+        this.description = description;
+    }
+    
+    public String getDescription() {
+        return this.description;
     }
     
     @Override
     public Collection<? extends Action> getActions(LabelAtom labelAtom) {
-        // extend the left-side menu for Label with our new action/page
-        return Collections.singleton(new LabelAction(labelAtom));
+        ArrayList<Action> actions = new ArrayList<Action>();
+        actions.addAll(super.getActions(labelAtom));
+        actions.add(new LabelAction(labelAtom));
+        if (Util.fixEmptyAndTrim(description) != null) {
+            actions.add(new LabelDescriptionAction(labelAtom, description));
+        }
+        // extend the left-side menu for this Label with our new actions/pages
+        return actions;
     }
     
     /**
