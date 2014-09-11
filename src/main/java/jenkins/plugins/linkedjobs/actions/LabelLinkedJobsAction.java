@@ -46,14 +46,14 @@ import hudson.model.labels.LabelAtom;
  * @author dominiquebrice
  *
  */
-public class LabelAction implements Action {
+public class LabelLinkedJobsAction implements Action {
     
     /**
      * The label associated to this action
      */
     private final LabelAtom label;
 
-    public LabelAction(LabelAtom labelAtom) {
+    public LabelLinkedJobsAction(LabelAtom labelAtom) {
         // for now only store the label
         // calculation is done when requested by display
         this.label = labelAtom;

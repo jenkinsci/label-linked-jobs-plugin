@@ -27,7 +27,7 @@ package jenkins.plugins.linkedjobs.extensions;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import jenkins.plugins.linkedjobs.actions.LabelAction;
+import jenkins.plugins.linkedjobs.actions.LabelLinkedJobsAction;
 import jenkins.plugins.linkedjobs.actions.LabelDescriptionAction;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -77,7 +77,7 @@ public class LabelExtension extends LabelAtomProperty {
     public Collection<? extends Action> getActions(LabelAtom labelAtom) {
         ArrayList<Action> actions = new ArrayList<Action>();
         actions.addAll(super.getActions(labelAtom));
-        actions.add(new LabelAction(labelAtom));
+        actions.add(new LabelLinkedJobsAction(labelAtom));
         if (Util.fixEmptyAndTrim(description) != null) {
             actions.add(new LabelDescriptionAction(labelAtom, description));
         }
