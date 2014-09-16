@@ -50,24 +50,13 @@ import hudson.model.labels.LabelAtomPropertyDescriptor;
 public class LabelExtension extends LabelAtomProperty {
     
     /**
-     * description of the label as entered by the user in the 
-     * label configuration page
-     */
-    private String description;
-    
-    /**
      * This constructor is called by jenkins when the user saves
      * the configuration page of a given label, and has selected
      * the checkbox to activate this extension.<BR/>
      * Checkbox displayed with <code>LabelConfigurationDescriptor.getDisplayName()</code> as a label
      */
     @DataBoundConstructor
-    public LabelExtension(String description) {
-        this.description = description;
-    }
-    
-    public String getDescription() {
-        return this.description;
+    public LabelExtension() {
     }
     
     @Override

@@ -54,7 +54,7 @@ THE SOFTWARE.
       <j:forEach var="node" items="${nodes}">
         <div>
           <j:set var="jobCount" value="${node.jobsCount}" />
-          <h3><a href="${rootURL}/${node.nodeURL}">${node.name}</a></h3>
+          <h4><a href="${rootURL}/${node.nodeURL}">${node.name}</a></h4>
           This node's <a href="${rootURL}/${node.labelURL}">label</a> is used directly by ${jobCount} job<j:if test="${jobCount > 1}">s</j:if>.
         </div>
       </j:forEach>
@@ -62,37 +62,45 @@ THE SOFTWARE.
 
       <j:set var="orphanedJobs" value="${it.orphanedJobs}" />
       <h2>Orphaned Jobs</h2>
+      <j:choose>
+        <j:when test="${empty(orphanedJobs)}">There are no orphaned jobs. Well done with your configuration!</j:when>
+        <j:otherwise>
+          The following job(s) cannot run on any node because of label (mis-)configuration. Get to it!<br/><br/>
+          <j:if test="${it.dashboardOrphanedJobsDetailedView}">
+            <t:projectView jobs="${orphanedJobs}"/>
+          </j:if>
+          <j:if test="${!it.dashboardOrphanedJobsDetailedView}">
+            <j:forEach var="job" items="${orphanedJobs}">
+              <a href="${job.absoluteUrl}">${job.name}</a>&#160;
+            </j:forEach>
+          </j:if>
+        </j:otherwise>
+      </j:choose>
+      <br/><br/>
+      
+      <j:if test="${it.showSingleNodeJobs}">  
+        <j:set var="singleNodeJobsByNode" value="${it.singleNodeJobs}" />
+        <h2>Single-node Jobs</h2>
         <j:choose>
-          <j:when test="${empty(orphanedJobs)}">There are no orphaned jobs. Well done with your configuration!</j:when>
-          <j:otherwise>
-            The following job(s) cannot run on any node because of label (mis-)configuration. Get to it!<br/><br/>
-            <j:if test="${it.dashboardOrphanedJobsDetailedView}">
-              <t:projectView jobs="${orphanedJobs}"/>
-            </j:if>
-            <j:if test="${!it.dashboardOrphanedJobsDetailedView}">
-              <j:forEach var="job" items="${orphanedJobs}">
-                <a href="${job.absoluteUrl}">${job.name}</a>&#160;
-              </j:forEach>
-            </j:if>
-          </j:otherwise>
-        </j:choose>
-        
-      <j:set var="singleNodeJobs" value="${it.singleNodeJobs}" />
-      <h2>Single-node Jobs</h2>
-        <j:choose>
-          <j:when test="${empty(singleNodeJobs)}">There are no single-node jobs. Well done with your configuration!</j:when>
+          <j:when test="${empty(singleNodeJobsByNode)}">There are no single-node jobs. Well done with your configuration!</j:when>
           <j:otherwise>
             The following job(s) can run on only one node because of label (mis-)configuration, so you may have trouble if their dedicated node goes down.<br/><br/>
-            <j:if test="${it.dashboardOrphanedJobsDetailedView}">
-              <t:projectView jobs="${singleNodeJobs}"/>
-            </j:if>
-            <j:if test="${!it.dashboardOrphanedJobsDetailedView}">
-              <j:forEach var="job" items="${singleNodeJobs}">
-                <a href="${job.absoluteUrl}">${job.name}</a>&#160;
-              </j:forEach>
-            </j:if>
+            <j:forEach var="node" items="${singleNodeJobsByNode}">
+              <div>
+                <h4><a href="${rootURL}/${node.nodeURL}">${node.name}</a></h4>
+                <j:if test="${it.dashboardOrphanedJobsDetailedView}">
+                  <t:projectView jobs="${node.jobs}"/>
+                </j:if>
+                <j:if test="${!it.dashboardOrphanedJobsDetailedView}">
+                  <j:forEach var="job" items="${node.jobs}">
+                    <a href="${job.absoluteUrl}">${job.name}</a>&#160;
+                  </j:forEach>
+                </j:if>
+              </div>
+            </j:forEach>
           </j:otherwise>
         </j:choose>
+      </j:if>
 
     </l:main-panel>
 

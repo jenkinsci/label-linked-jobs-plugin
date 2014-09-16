@@ -44,8 +44,8 @@ public class JobsGroup implements Comparable<JobsGroup> {
     // list of jobs sharing this label
     private ArrayList<AbstractProject<?, ?>> jobs;
     // nodes that could run all jobs listed here considering their label
-    private ArrayList<Node> applicableNodes;
-    
+    private List<Node> applicableNodes;
+
     public JobsGroup(Label l) {
         label = l;
         jobs = new ArrayList<AbstractProject<?,?>>();

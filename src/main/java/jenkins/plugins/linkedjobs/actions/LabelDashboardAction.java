@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import jenkins.model.Jenkins;
+import jenkins.plugins.linkedjobs.model.JobsGroup;
 import jenkins.plugins.linkedjobs.model.LabelAtomData;
 import jenkins.plugins.linkedjobs.model.NodeData;
 import jenkins.plugins.linkedjobs.settings.GlobalSettings;
@@ -54,7 +55,7 @@ import hudson.model.TopLevelItem;
 public class LabelDashboardAction implements RootAction {
 
     public String getIconFileName() {
-        return "search.png";
+        return "attribute.png";
     }
 
     public String getDisplayName() {
@@ -67,6 +68,10 @@ public class LabelDashboardAction implements RootAction {
     
     public boolean getDashboardOrphanedJobsDetailedView() {
         return GlobalSettings.get().getDashboardOrphanedJobsDetailedView();
+    }
+    
+    public boolean getShowSingleNodeJobs() {
+        return GlobalSettings.get().getShowSingleNodeJobs();
     }
     
     /**
@@ -127,18 +132,48 @@ public class LabelDashboardAction implements RootAction {
     // this function finds all jobs that can't run on any nodes
     // because of labels (mis-)configuration
     public ArrayList<AbstractProject<?, ?>> getOrphanedJobs() {
-        return getJobsWithNMatchingNodes(0);
+        ArrayList<AbstractProject<?, ?>> orphanedJobs = new ArrayList<AbstractProject<?, ?>>();
+        for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+            if (!(job instanceof TopLevelItem)) {
+                // consider only TopLevelItem - not 100% sure why, though...
+                continue;
+            }
+            Label jobLabel = job.getAssignedLabel();
+            if (jobLabel == null) {
+                // if job.getAssignedLabel is null then the job can run
+                // anywhere, so we're fine
+                continue;
+            }
+            Jenkins jenkins = Jenkins.getInstance();
+            if (jobLabel.matches(jenkins)) {
+                // this job can run on the master, skip it
+                continue;
+            }
+            boolean hasMatchingNode = false;
+            Iterator<Node> i = jenkins.getNodes().iterator();
+            while (i.hasNext() && !hasMatchingNode) {
+                if (jobLabel.matches(i.next())) {
+                    hasMatchingNode = true;
+                }
+            }
+            if (!hasMatchingNode) {
+                orphanedJobs.add(job);
+            }
+        }
+        // sort list by jobs names
+        Collections.sort(orphanedJobs, new Comparator<AbstractProject<?, ?>>() {
+            public int compare(AbstractProject<?, ?> o1, AbstractProject<?, ?> o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        return orphanedJobs;
     }
     
     // this function finds all jobs that can run on only one node
     // because of labels (mis-)configuration, thus with a non-redundancy
     // issue
-    public ArrayList<AbstractProject<?, ?>> getSingleNodeJobs() {
-        return getJobsWithNMatchingNodes(1);
-    }
-        
-    public ArrayList<AbstractProject<?, ?>> getJobsWithNMatchingNodes(int n) {
-        ArrayList<AbstractProject<?, ?>> result = new ArrayList<AbstractProject<?,?>>();
+    public ArrayList<NodeData> getSingleNodeJobs() {
+        HashMap<Node, NodeData> tmpResult = new HashMap<Node, NodeData>();
 
         for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
             if (!(job instanceof TopLevelItem)) {
@@ -149,34 +184,51 @@ public class LabelDashboardAction implements RootAction {
             Label jobLabel = job.getAssignedLabel();
             if (jobLabel == null) {
                 // if job.getAssignedLabel is null then the job can run
-                // anywhere, so we're fine
+                // anywhere, so we're fine - that is, assuming there's more
+                // than one node/slave in the infra
                 continue;
             }
 
-            int iMatchingNode = 0;
+            Node node = null;
             Jenkins jenkins = Jenkins.getInstance();
             if (jobLabel.matches(jenkins)) {
-                iMatchingNode++;
+                node  = jenkins;
             }
 
             Iterator<Node> i = jenkins.getNodes().iterator();
-            while (i.hasNext() && iMatchingNode <= n) {
-                if (jobLabel.matches(i.next())) {
-                    iMatchingNode++;
+            while (i.hasNext()) {
+                Node iNode = i.next();
+                if (jobLabel.matches(iNode)) {
+                    if (node == null) {
+                        // that's the first node this job can run on
+                        // let's continue the loop
+                        node = iNode;
+                    }
+                    else {
+                        // this job can already run on one node
+                        // that's the second node, so we won't keep
+                        // track of it. Indicate it by setting node to null
+                        node = null;
+                        // and get out of the loop
+                        break;
+                    }
                 }
             }
-            if (iMatchingNode == n) {
-                result.add(job);
+            
+            // that fact that the job can run on a single-node
+            // is indicated by node being not null
+            if (node != null) {
+                if (!tmpResult.containsKey(node)) {
+                    tmpResult.put(node, new NodeData(node));
+                }
+                tmpResult.get(node).addJob(job);
             }
         }
 
-        // sort list by jobs names
-        Collections.sort(result,
-          new Comparator<AbstractProject<?, ?>>() {
-            public int compare(AbstractProject<?, ?> o1, AbstractProject<?, ?> o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
+        ArrayList<NodeData> result = new ArrayList<NodeData>(tmpResult.size());
+        result.addAll(tmpResult.values());
+        // sort list by node names
+        Collections.sort(result);
         return result;
     }
     
@@ -208,7 +260,7 @@ public class LabelDashboardAction implements RootAction {
             for (LabelAtom label : job.getAssignedLabel().listAtoms()) {
                 if (tmpResult.containsKey(label)) {
                     // ok, this corresponds to a node's self label. Let's use it
-                    tmpResult.get(label).add(job);
+                    tmpResult.get(label).addJob(job);
                 }
             }
         }

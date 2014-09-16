@@ -41,16 +41,22 @@ import hudson.Extension;
 public class GlobalSettings extends GlobalConfiguration {
     
     /**
-     * toggle to determiner whether the jobs should be listed in a condensed way or not on the
+     * toggle to determine whether the jobs should be listed in a condensed way or not on the
      * Linked Jobs page (in each label section)
      */
     private boolean detailedView = true;
     
     /**
-     * toggle to determiner whether the jobs should be listed in a condensed way or not on the
+     * toggle to determine whether the jobs should be listed in a condensed way or not on the
      * Labels Dashboard
      */
     private boolean dashboardOrphanedJobsDetailedView = true;
+    
+    /**
+     * toggle to determine whether jobs that can run on only one node should be shown
+     * in the dashboard
+     */
+    private boolean showSingleNodeJobs = true;
     
     public GlobalSettings() {
         // this loads the settings from this plugin xml file
@@ -76,6 +82,7 @@ public class GlobalSettings extends GlobalConfiguration {
         // set that to properties and call save().
         detailedView = formData.getBoolean("detailedView");
         dashboardOrphanedJobsDetailedView = formData.getBoolean("dashboardOrphanedJobsDetailedView");
+        showSingleNodeJobs = formData.getBoolean("showSingleNodeJobs");
         
         // save this instance members to the plugin configuration file
         save();
@@ -88,5 +95,9 @@ public class GlobalSettings extends GlobalConfiguration {
     
     public boolean getDashboardOrphanedJobsDetailedView() {
         return dashboardOrphanedJobsDetailedView;   
+    }
+    
+    public boolean getShowSingleNodeJobs() {
+        return showSingleNodeJobs;
     }
 }

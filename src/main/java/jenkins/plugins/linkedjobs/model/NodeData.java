@@ -25,6 +25,7 @@
 package jenkins.plugins.linkedjobs.model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import jenkins.model.Jenkins;
 import hudson.model.AbstractProject;
@@ -41,7 +42,7 @@ public class NodeData implements Comparable<NodeData> {
         node = n;
     }
 
-    public void add(AbstractProject<?, ?> job) {
+    public void addJob(AbstractProject<?, ?> job) {
         jobs.add(job);
     }    
     
@@ -63,6 +64,10 @@ public class NodeData implements Comparable<NodeData> {
     
     public int getJobsCount() {
         return jobs.size();
+    }
+    
+    public List<AbstractProject<?, ?>> getJobs() {
+        return jobs;
     }
 
     /************************************
