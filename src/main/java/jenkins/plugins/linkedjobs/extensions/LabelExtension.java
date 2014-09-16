@@ -24,16 +24,14 @@
 
 package jenkins.plugins.linkedjobs.extensions;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 import jenkins.plugins.linkedjobs.actions.LabelLinkedJobsAction;
-import jenkins.plugins.linkedjobs.actions.LabelDescriptionAction;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.Extension;
-import hudson.Util;
 import hudson.model.Action;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelAtomProperty;
@@ -42,11 +40,10 @@ import hudson.model.labels.LabelAtomPropertyDescriptor;
 /**
  * One ExtensionPoint of this plugin<BR/>
  * 
- * <ul><li>add an Action, which makes an additional link available for Labels in the left-hand side menu</li>
- * <li>define the Descriptor class, which manages the plugin configuration <i>per label</i> - that is,
+ * <ul><li>adds an Action, which makes an additional link available for Labels in the left-hand side menu to see linked jobs</li>
+ * <li>defines the Descriptor class, which manages the plugin configuration <i>per label</i> - that is,
  * returns the name of the option to activate the plugin for that label
  * See <code>LabelConfigurationDescriptor.getDisplayName()</code></li>
- * <li>add an Action to show the Label description, if defined in the label configuration</li>
  * </ul>
  * @author dominiquebrice
  */
@@ -75,14 +72,8 @@ public class LabelExtension extends LabelAtomProperty {
     
     @Override
     public Collection<? extends Action> getActions(LabelAtom labelAtom) {
-        ArrayList<Action> actions = new ArrayList<Action>();
-        actions.addAll(super.getActions(labelAtom));
-        actions.add(new LabelLinkedJobsAction(labelAtom));
-        if (Util.fixEmptyAndTrim(description) != null) {
-            actions.add(new LabelDescriptionAction(labelAtom, description));
-        }
-        // extend the left-side menu for this Label with our new actions/pages
-        return actions;
+        // extend the left-side menu for Label with our new action/page
+        return Collections.singleton(new LabelLinkedJobsAction(labelAtom));
     }
     
     /**
