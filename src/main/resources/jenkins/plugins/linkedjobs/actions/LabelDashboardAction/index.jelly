@@ -76,6 +76,23 @@ THE SOFTWARE.
             </j:if>
           </j:otherwise>
         </j:choose>
+        
+      <j:set var="singleNodeJobs" value="${it.singleNodeJobs}" />
+      <h2>Single-node Jobs</h2>
+        <j:choose>
+          <j:when test="${empty(singleNodeJobs)}">There are no single-node jobs. Well done with your configuration!</j:when>
+          <j:otherwise>
+            The following job(s) can run on only one node because of label (mis-)configuration, so you may have trouble if their dedicated node goes down.<br/><br/>
+            <j:if test="${it.dashboardOrphanedJobsDetailedView}">
+              <t:projectView jobs="${singleNodeJobs}"/>
+            </j:if>
+            <j:if test="${!it.dashboardOrphanedJobsDetailedView}">
+              <j:forEach var="job" items="${singleNodeJobs}">
+                <a href="${job.absoluteUrl}">${job.name}</a>&#160;
+              </j:forEach>
+            </j:if>
+          </j:otherwise>
+        </j:choose>
 
     </l:main-panel>
 

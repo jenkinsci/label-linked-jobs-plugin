@@ -127,7 +127,18 @@ public class LabelDashboardAction implements RootAction {
     // this function finds all jobs that can't run on any nodes
     // because of labels (mis-)configuration
     public ArrayList<AbstractProject<?, ?>> getOrphanedJobs() {
-        ArrayList<AbstractProject<?, ?>> orphanedJobs = new ArrayList<AbstractProject<?,?>>();
+        return getJobsWithNMatchingNodes(0);
+    }
+    
+    // this function finds all jobs that can run on only one node
+    // because of labels (mis-)configuration, thus with a non-redundancy
+    // issue
+    public ArrayList<AbstractProject<?, ?>> getSingleNodeJobs() {
+        return getJobsWithNMatchingNodes(1);
+    }
+        
+    public ArrayList<AbstractProject<?, ?>> getJobsWithNMatchingNodes(int n) {
+        ArrayList<AbstractProject<?, ?>> result = new ArrayList<AbstractProject<?,?>>();
 
         for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
             if (!(job instanceof TopLevelItem)) {
@@ -142,32 +153,31 @@ public class LabelDashboardAction implements RootAction {
                 continue;
             }
 
+            int iMatchingNode = 0;
             Jenkins jenkins = Jenkins.getInstance();
             if (jobLabel.matches(jenkins)) {
-                // this job can run on the master, skip it
-                continue;
+                iMatchingNode++;
             }
-            
-            boolean hasMatchingNode = false;
+
             Iterator<Node> i = jenkins.getNodes().iterator();
-            while (i.hasNext() && !hasMatchingNode) {
+            while (i.hasNext() && iMatchingNode <= n) {
                 if (jobLabel.matches(i.next())) {
-                    hasMatchingNode = true;
+                    iMatchingNode++;
                 }
             }
-            if (!hasMatchingNode) {
-                orphanedJobs.add(job);
+            if (iMatchingNode == n) {
+                result.add(job);
             }
         }
 
         // sort list by jobs names
-        Collections.sort(orphanedJobs,
+        Collections.sort(result,
           new Comparator<AbstractProject<?, ?>>() {
             public int compare(AbstractProject<?, ?> o1, AbstractProject<?, ?> o2) {
                 return o1.getName().compareTo(o2.getName());
             }
         });
-        return orphanedJobs;
+        return result;
     }
     
     /**
