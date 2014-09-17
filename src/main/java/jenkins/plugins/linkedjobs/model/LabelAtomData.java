@@ -71,6 +71,15 @@ public class LabelAtomData implements Comparable<LabelAtomData> {
     public int getNodesCount() {
         return nodes.size();
     }
+    
+    public boolean getPluginActiveForLabel() {
+        for (hudson.model.Action a : label.getAllActions()) {
+            if (a instanceof jenkins.plugins.linkedjobs.actions.LabelLinkedJobsAction) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /************************************
      * Comparable interface implementation

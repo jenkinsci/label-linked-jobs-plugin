@@ -40,8 +40,14 @@ THE SOFTWARE.
         <div>
           <j:set var="jobCount" value="${label.jobsCount}" />
           <j:set var="nodeCount" value="${label.nodesCount}" />
+          <j:set var="pluginActive" value="${label.pluginActiveForLabel}" />
           <h3><a href="${rootURL}/${label.labelURL}">${label.label}</a></h3>
-          This label is used by <a href="${rootURL}/${label.labelURL}linkedjobs">${jobCount} job<j:if test="${jobCount > 1}">s</j:if></a>.
+          <j:if test="${pluginActive}">
+            This label is used by <a href="${rootURL}/${label.labelURL}linkedjobs">${jobCount} job<j:if test="${jobCount > 1}">s</j:if></a>.
+          </j:if>
+          <j:if test="${!pluginActive}">
+            This label is used by ${jobCount} job<j:if test="${jobCount > 1}">s</j:if>. <a href="${rootURL}/${label.labelURL}configure">Activate</a> its Linked Jobs page to know more.
+          </j:if>
           <j:if test="${jobCount == 0}"><b><font color="red">You should verify your configuration.</font></b></j:if><br/>
           This label is defined by ${nodeCount} node<j:if test="${nodeCount > 1}">s</j:if>.
           <j:if test="${nodeCount == 0}"><b><font color="red">You should verify your configuration.</font></b></j:if>
