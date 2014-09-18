@@ -73,7 +73,7 @@ public class LabelAtomData implements Comparable<LabelAtomData> {
     }
     
     public boolean getPluginActiveForLabel() {
-        for (hudson.model.Action a : label.getAllActions()) {
+        for (hudson.model.Action a : label.getActions()) {
             if (a instanceof jenkins.plugins.linkedjobs.actions.LabelLinkedJobsAction) {
                 return true;
             }
