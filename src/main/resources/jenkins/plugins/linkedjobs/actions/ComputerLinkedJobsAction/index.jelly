@@ -30,7 +30,7 @@ THE SOFTWARE.
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     
   <l:layout title="${it.title}">
-    <!--st:include it="${it.node}" page="sidepanel2.jelly"/-->
+    <st:include it="${it.owner}" page="sidepanel.jelly"/>
 
     <l:main-panel>
     

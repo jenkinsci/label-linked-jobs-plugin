@@ -31,6 +31,7 @@ import jenkins.plugins.linkedjobs.model.NodeData;
 import jenkins.plugins.linkedjobs.settings.GlobalSettings;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.ModelObject;
 import hudson.model.Computer;
 import hudson.model.Label;
 import hudson.model.Node;
@@ -59,6 +60,10 @@ public class ComputerLinkedJobsAction implements Action {
 
     public Node getNode() {
         return computer.getNode();
+    }
+    
+    public ModelObject getOwner() {
+        return computer;
     }
     
     public String getIconFileName() {
