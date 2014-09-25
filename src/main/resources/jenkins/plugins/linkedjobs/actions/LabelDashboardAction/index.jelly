@@ -1,0 +1,115 @@
+<!--
+The MIT License
+ 
+Copyright (C) 2014 Dominique Brice
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is furnished
+to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<!--
+  This script corresponds to the "Linked Jobs" page, accessible via a new link
+  in the left-hand side menu for labels
+-->
+
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+
+  <l:layout title="${it.displayName}">
+    <st:include it="${app}" page="sidepanel.jelly"/>
+
+    <l:main-panel>
+    
+      <h2>Labels</h2>
+      <j:set var="labels" value="${it.labelsData}" />
+      <j:forEach var="label" items="${labels}">
+        <div>
+          <j:set var="jobCount" value="${label.jobsCount}" />
+          <j:set var="nodeCount" value="${label.nodesCount}" />
+          <j:set var="pluginActive" value="${label.pluginActiveForLabel}" />
+          <h3><a href="${rootURL}/${label.labelURL}">${label.label}</a></h3>
+          <j:if test="${pluginActive}">
+            This label is used by <a href="${rootURL}/${label.labelURL}linkedjobs">${jobCount} job<j:if test="${jobCount > 1}">s</j:if></a>.
+          </j:if>
+          <j:if test="${!pluginActive}">
+            This label is used by ${jobCount} job<j:if test="${jobCount > 1}">s</j:if>. <a href="${rootURL}/${label.labelURL}configure">Activate</a> its Linked Jobs page to know more.
+          </j:if>
+          <j:if test="${jobCount == 0}"><b><font color="red">You should verify your configuration.</font></b></j:if><br/>
+          This label is defined by ${nodeCount} node<j:if test="${nodeCount > 1}">s</j:if>.
+          <j:if test="${nodeCount == 0}"><b><font color="red">You should verify your configuration.</font></b></j:if>
+        </div>
+      </j:forEach>
+      <br/><br/>
+
+      <h2>Nodes</h2>
+      <j:set var="nodes" value="${it.nodesData}" />
+      <j:forEach var="node" items="${nodes}">
+        <div>
+          <j:set var="jobCount" value="${node.jobsCount}" />
+          <h4><a href="${rootURL}/${node.nodeURL}">${node.name}</a></h4>
+          This node's <a href="${rootURL}/${node.labelURL}">label</a> is used directly by ${jobCount} job<j:if test="${jobCount > 1}">s</j:if>.
+        </div>
+      </j:forEach>
+      <br/><br/>
+
+      <j:set var="orphanedJobs" value="${it.orphanedJobs}" />
+      <h2>Orphaned Jobs</h2>
+      <j:choose>
+        <j:when test="${empty(orphanedJobs)}">There are no orphaned jobs. Well done with your configuration!</j:when>
+        <j:otherwise>
+          The following job(s) cannot run on any node because of label (mis-)configuration. Get to it!<br/><br/>
+          <j:if test="${it.dashboardOrphanedJobsDetailedView}">
+            <t:projectView jobs="${orphanedJobs}"/>
+          </j:if>
+          <j:if test="${!it.dashboardOrphanedJobsDetailedView}">
+            <j:forEach var="job" items="${orphanedJobs}">
+              <a href="${job.absoluteUrl}">${job.name}</a>&#160;
+            </j:forEach>
+          </j:if>
+        </j:otherwise>
+      </j:choose>
+      <br/><br/>
+      
+      <j:if test="${it.showSingleNodeJobs}">  
+        <j:set var="singleNodeJobsByNode" value="${it.singleNodeJobs}" />
+        <h2>Single-node Jobs</h2>
+        <j:choose>
+          <j:when test="${empty(singleNodeJobsByNode)}">There are no single-node jobs. Well done with your configuration!</j:when>
+          <j:otherwise>
+            The following job(s) can run on only one node because of label (mis-)configuration, so you may have trouble if their dedicated node goes down.<br/><br/>
+            <j:forEach var="node" items="${singleNodeJobsByNode}">
+              <div>
+                <h4><a href="${rootURL}/${node.nodeURL}">${node.name}</a></h4>
+                <j:if test="${it.dashboardOrphanedJobsDetailedView}">
+                  <t:projectView jobs="${node.jobs}"/>
+                </j:if>
+                <j:if test="${!it.dashboardOrphanedJobsDetailedView}">
+                  <j:forEach var="job" items="${node.jobs}">
+                    <a href="${job.absoluteUrl}">${job.name}</a>&#160;
+                  </j:forEach>
+                </j:if>
+              </div>
+            </j:forEach>
+          </j:otherwise>
+        </j:choose>
+      </j:if>
+
+    </l:main-panel>
+
+  </l:layout>
+
+</j:jelly>

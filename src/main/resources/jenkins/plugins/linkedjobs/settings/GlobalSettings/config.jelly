@@ -28,8 +28,16 @@ THE SOFTWARE.
   
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:section title="Linked Jobs Plugin Configuration">
-    <f:entry title="Detailed projects list" field="detailedView"
-      description="Uncheck if you want to see a condensed list of the projects on the Linked Jobs page">
+    <f:entry title="Linked Jobs - Detailed projects list" field="detailedView"
+      description="Uncheck if you want to see a condensed list of the projects on the Linked Jobs pages">
+      <f:checkbox />
+    </f:entry>
+    <f:entry title="Labels Dashboard - Detailed projects list" field="dashboardOrphanedJobsDetailedView"
+      description="Uncheck if you want to see condensed lists of jobs on the Labels Dashboard">
+      <f:checkbox />
+    </f:entry>
+    <f:entry title="List single-node/exclusive jobs" field="showSingleNodeJobs"
+      description="Check if you want to see the jobs that can run on only one node (Labels Dashboard, Linked Jobs for nodes)">
       <f:checkbox />
     </f:entry>
   </f:section>

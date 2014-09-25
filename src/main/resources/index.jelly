@@ -26,5 +26,5 @@ THE SOFTWARE.
   This view is used to render in the installed plugins page.
 -->
 <div>
-  This plugin provides a new page showing all jobs that are linked to a particular label.
+    A plugin to facilitate maintenance when using numerous/complex labels.
 </div>

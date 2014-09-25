@@ -24,83 +24,57 @@
 
 package jenkins.plugins.linkedjobs.model;
 
-import hudson.model.AbstractProject;
-import hudson.model.Label;
-import hudson.model.Node;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import jenkins.model.Jenkins;
+import hudson.model.AbstractProject;
+import hudson.model.Node;
 
-/**
- * Data structure to group together jobs (projects) sharing the same label
- * @author dominiquebrice
- */
-public class JobsGroup implements Comparable<JobsGroup> {
+public class NodeData implements Comparable<NodeData> {
 
-    // the label shared by all jobs in this group
-    private final Label label;
-    // list of jobs sharing this label
+    private Node node;
+    // list of jobs using this node directly (by label)
     private ArrayList<AbstractProject<?, ?>> jobs;
-    // nodes that could run all jobs listed here considering their label
-    private List<Node> applicableNodes;
 
-    public JobsGroup(Label l) {
-        label = l;
-        jobs = new ArrayList<AbstractProject<?,?>>();
-        
-        applicableNodes = new ArrayList<Node>();
-        // list all nodes that could run jobs with this particular label
-        // this code is strongly inspired from what is found in hudson.model.Label.getNodes()
-        Jenkins jenkins = Jenkins.getInstance();
-        // do not forget master node!
-        if (label.matches(jenkins)) {
-            applicableNodes.add(jenkins);
-        }
-        for (Node node : jenkins.getNodes()) {
-            if (label.matches(node)) {
-                applicableNodes.add(node);
-            }
-        }
+    public NodeData(Node n) {
+        jobs = new ArrayList<AbstractProject<?, ?>>();
+        node = n;
     }
-    
+
     public void addJob(AbstractProject<?, ?> job) {
         jobs.add(job);
-    }
+    }    
     
     /************************************
      * functions used to render display in index.jelly
      ************************************/
     
-    public String getLabel() {
-        return label.getDisplayName();
+    public String getName() {
+        return node.getDisplayName();
     }
     
     public String getLabelURL() {
-        return label.getUrl();
+        return node.getSelfLabel().getUrl();
+    }
+    
+    public String getNodeURL() {
+        return Jenkins.getInstance().getComputer(node.getNodeName()).getUrl();
+    }
+    
+    public int getJobsCount() {
+        return jobs.size();
     }
     
     public List<AbstractProject<?, ?>> getJobs() {
         return jobs;
     }
-    
-    public List<Node> getNodes() {
-        return applicableNodes;
-    }
-    
-    public boolean isSingleNode() {
-        return applicableNodes.size() == 1;
-    }
-    
-    public boolean getHasMoreThanOneJob() {
-        return jobs.size() > 1;
-    }
 
     /************************************
-     * implements Comparable<JobsGroup>
+     * Comparable interface implementation
      ************************************/
-    public int compareTo(JobsGroup o) {
-        return this.label.compareTo(o.label);
+    
+    public int compareTo(NodeData o) {
+        return this.getName().compareTo(o.getName());
     }
 }
