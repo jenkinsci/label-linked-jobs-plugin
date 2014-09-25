@@ -29,6 +29,7 @@ import hudson.model.Label;
 import hudson.model.Node;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import jenkins.model.Jenkins;
@@ -87,6 +88,10 @@ public class JobsGroup implements Comparable<JobsGroup> {
     
     public List<Node> getNodes() {
         return applicableNodes;
+    }
+    
+    public boolean isSingleNode() {
+        return applicableNodes.size() == 1;
     }
     
     public boolean getHasMoreThanOneJob() {

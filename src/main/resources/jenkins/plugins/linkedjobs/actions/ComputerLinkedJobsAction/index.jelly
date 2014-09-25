@@ -33,41 +33,68 @@ THE SOFTWARE.
     <st:include it="${it.owner}" page="sidepanel.jelly"/>
 
     <l:main-panel>
-    
-      <h2>Linked jobs</h2>
-      <j:set var="nodeData" value="${it.linkedJobs}" />
-      <j:if test="${nodeData.jobsCount == 0}">
-        There are no jobs that are linked to this node, based on label configuration.
-      </j:if>
-      <j:if test="${nodeData.jobsCount != 0}">
-        Based on label configuration, the following job(s) could run on this node.<br/><br/>
-        <j:if test="${it.detailedView}">
-          <t:projectView jobs="${nodeData.jobs}"/>
-        </j:if>
-        <j:if test="${!it.detailedView}">
-          <j:forEach var="job" items="${nodeData.jobs}">
-            <a href="${job.absoluteUrl}">${job.name}</a>&#160;
+      
+      <h2>${it.owner.displayName}'s labels</h2>
+      <j:set var="labels" value="${it.nodeLabels}" />
+      <j:choose>
+        <j:when test="${empty(labels)}">
+          None.
+        </j:when>
+        <j:otherwise>
+          <j:forEach var="label" items="${labels}">
+            <a href="${rootURL}/${label.url}">${label.displayName}</a>&#160;
           </j:forEach>
-        </j:if>
-      </j:if>
+        </j:otherwise>
+      </j:choose>
+      <br/><br/>
+      
+      <h2>Linked jobs</h2>
+      <j:set var="groups" value="${it.linkedJobs}" />
+      <j:choose>
+        <j:when test="${empty(groups)}">
+          There are no jobs that are linked to this node, based on label configuration.
+        </j:when>
+        <j:otherwise>
+          <j:forEach var="group" items="${groups}">
+            <h3>Job<j:if test="${group.hasMoreThanOneJob}">s</j:if> configured with <a href="${rootURL}/${group.labelURL}">${group.label}</a></h3>
+            <j:if test="${it.detailedView}">
+              <t:projectView jobs="${group.jobs}"/>
+            </j:if>
+            <j:if test="${!it.detailedView}">
+              <j:forEach var="job" items="${group.jobs}">
+                <a href="${job.absoluteUrl}">${job.name}</a>&#160;
+              </j:forEach>
+            </j:if>
+          </j:forEach>
+        </j:otherwise>
+      </j:choose>
+      <br/><br/>
         
       <j:if test="${it.showSingleNodeJobs}">
+        
         <br/><br/><h2>Exclusive jobs</h2>
-        <j:set var="nodeData" value="${it.exclusiveJobs}" />
-        <j:if test="${nodeData.jobsCount == 0}">
-          There are no single-node jobs that can run only on this node. Well done with your configuration!
-        </j:if>
-        <j:if test="${nodeData.jobsCount != 0}">
-          The following job(s) can run only on this node because of label (mis-)configuration, so you may have trouble if it goes down.<br/><br/>
-          <j:if test="${it.detailedView}">
-            <t:projectView jobs="${nodeData.jobs}"/>
-          </j:if>
-          <j:if test="${!it.detailedView}">
-            <j:forEach var="job" items="${nodeData.jobs}">
-              <a href="${job.absoluteUrl}">${job.name}</a>&#160;
+        <j:set var="exclusiveGroups" value="${it.getExclusiveJobs(groups)}" />
+        <j:choose>
+          <j:when test="${empty(exclusiveGroups)}">
+            There are no single-node jobs that can run only on this node. Well done with your configuration!
+          </j:when>
+          <j:otherwise>
+            The following job(s) can run only on this node because of label (mis-)configuration, so you may have trouble if it goes down.
+            <j:forEach var="group" items="${exclusiveGroups}">
+              <h3>Job<j:if test="${group.hasMoreThanOneJob}">s</j:if> configured with <a href="${rootURL}/${group.labelURL}">${group.label}</a></h3>
+              <j:if test="${it.detailedView}">
+                <t:projectView jobs="${group.jobs}"/>
+              </j:if>
+              <j:if test="${!it.detailedView}">
+                <j:forEach var="job" items="${group.jobs}">
+                  <a href="${job.absoluteUrl}">${job.name}</a>&#160;
+                </j:forEach>
+              </j:if>
+              <br/><br/>
             </j:forEach>
-          </j:if>
-        </j:if>
+          </j:otherwise>
+        </j:choose>
+        
       </j:if>
 
     </l:main-panel>

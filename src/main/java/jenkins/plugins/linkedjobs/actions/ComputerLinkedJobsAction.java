@@ -24,9 +24,15 @@
 
 package jenkins.plugins.linkedjobs.actions;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 import jenkins.model.Jenkins;
+import jenkins.plugins.linkedjobs.model.JobsGroup;
+import jenkins.plugins.linkedjobs.model.LabelAtomData;
 import jenkins.plugins.linkedjobs.model.NodeData;
 import jenkins.plugins.linkedjobs.settings.GlobalSettings;
 import hudson.model.AbstractProject;
@@ -36,6 +42,7 @@ import hudson.model.Computer;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.TopLevelItem;
+import hudson.model.labels.LabelAtom;
 
 /**
  * For each Computer, Jenkins associates an object of this class to a Linked Jobs page
@@ -88,69 +95,47 @@ public class ComputerLinkedJobsAction implements Action {
         return GlobalSettings.get().getShowSingleNodeJobs();
     }
     
-    // this function finds all jobs that can run only on this node because
-    // of labels (mis-)configuration, thus with a potential non-redundancy
-    // issue
-    public NodeData getExclusiveJobs() {
+    public List<LabelAtom> getNodeLabels() {
+        ArrayList<LabelAtom> result = new ArrayList<LabelAtom>();
+        // list only static labels, not dynamic labels nor the node's self-label
+        // so do not call Node.getAssignedLabels(), instead replicate here
+        // only the interesting part of this function, which is the Label.parse(getLabelString()) call
         Node node = computer.getNode();
-        NodeData result = new NodeData(node);
-
-        for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
-            if (!(job instanceof TopLevelItem)) {
-                // consider only TopLevelItem - not 100% sure why, though...
-                continue;
-            }
-
-            if (canRunExclusivelyOnThisNode(job.getAssignedLabel())) {
-                result.addJob(job);
-            }
+        if (node == null) {
+            return Collections.emptyList();
         }
 
+        for (LabelAtom label : Label.parse(node.getLabelString())) {
+            if (node.getSelfLabel().equals(label)) {
+                // skip label that corresponds to a node name
+                // see getNodesData()
+                continue;
+            }
+            result.add(label);
+        }
         return result;
     }
     
-    private boolean canRunExclusivelyOnThisNode(Label l) {
-        if (l == null) {
-            // no label so no exclusivity
-            return false;
-        }
-        
-        Node exclusiveNode = null;
-        
-        Jenkins jenkins = Jenkins.getInstance();
-        if (l.matches(jenkins)) {
-            // this job could run on master, keep track of it
-            exclusiveNode = jenkins;
-        }
-        
-        
-        Iterator<Node> i = jenkins.getNodes().iterator();
+    // this function finds all jobs that can run only on this node because
+    // of labels (mis-)configuration, thus with a potential non-redundancy
+    // issue
+    public List<JobsGroup> getExclusiveJobs(List<JobsGroup> groups) {
+        Iterator<JobsGroup> i = groups.iterator();
         while (i.hasNext()) {
-            Node nodeToTest = i.next();
-            if (l.matches(nodeToTest)) {
-                // this label could run on this node!
-                if (exclusiveNode == null) {
-                    // we haven't found a node where this label can run,
-                    // so let's keep track of this one. Maybe it's the only one?
-                    exclusiveNode = nodeToTest;
-                }
-                else {
-                    // wait, this label could already run on exclusiveNode, and now
-                    // it can run on this other node. There's no exclusivity here
-                    exclusiveNode = null;
-                    break;
-                }
+            JobsGroup group = i.next();
+            if (!group.isSingleNode()) {
+                i.remove();
             }
         }
-        
-        return (exclusiveNode != null && exclusiveNode.equals(computer.getNode()));
+
+        return groups;
     }
     
     // this function finds all jobs that could run on this node,
-    // based on labels configuration
-    public NodeData getLinkedJobs() {
+    // based on labels configuration, and groups them by label
+    public List<JobsGroup> getLinkedJobs() {
+        HashMap<Label, JobsGroup> tmpResult = new HashMap<Label, JobsGroup>();
         Node node = computer.getNode();
-        NodeData result = new NodeData(node);
 
         for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
             if (!(job instanceof TopLevelItem)) {
@@ -165,9 +150,18 @@ public class ComputerLinkedJobsAction implements Action {
             }
 
             if (jobLabel.matches(node)) {
-                result.addJob(job);
+                JobsGroup matchingJobGroup = tmpResult.get(jobLabel);
+                if (matchingJobGroup == null) {
+                    matchingJobGroup = new JobsGroup(jobLabel);
+                    tmpResult.put(jobLabel, matchingJobGroup);
+                }
+                matchingJobGroup.addJob(job);
             }
         }
+
+        ArrayList<JobsGroup> result = new ArrayList<JobsGroup>(tmpResult.size());
+        result.addAll(tmpResult.values());
+        Collections.sort(result);
 
         return result;
     }
