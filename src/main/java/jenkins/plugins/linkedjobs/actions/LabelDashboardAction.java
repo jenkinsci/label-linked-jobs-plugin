@@ -128,6 +128,28 @@ public class LabelDashboardAction implements RootAction {
         return result;
     }
     
+    // this function returns all jobs that have no associated label(s)
+    public ArrayList<AbstractProject<?, ?>> getJobsWithNoLabels() {
+        ArrayList<AbstractProject<?, ?>> noLabelsJobs = new ArrayList<AbstractProject<?, ?>>();
+        for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+            if (!(job instanceof TopLevelItem)) {
+                // consider only TopLevelItem - not 100% sure why, though...
+                continue;
+            }
+            Label jobLabel = job.getAssignedLabel();
+            if (jobLabel == null) {
+                noLabelsJobs.add(job);
+            }
+        }
+        // sort list by jobs names
+        Collections.sort(noLabelsJobs, new Comparator<AbstractProject<?, ?>>() {
+            public int compare(AbstractProject<?, ?> o1, AbstractProject<?, ?> o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        return noLabelsJobs;
+    }
+    
     // this function finds all jobs that can't run on any nodes
     // because of labels (mis-)configuration
     public ArrayList<AbstractProject<?, ?>> getOrphanedJobs() {
