@@ -32,8 +32,6 @@ import java.util.List;
 
 import jenkins.model.Jenkins;
 import jenkins.plugins.linkedjobs.model.JobsGroup;
-import jenkins.plugins.linkedjobs.model.LabelAtomData;
-import jenkins.plugins.linkedjobs.model.NodeData;
 import jenkins.plugins.linkedjobs.settings.GlobalSettings;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
