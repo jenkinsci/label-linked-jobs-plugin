@@ -58,6 +58,12 @@ public class GlobalSettings extends GlobalConfiguration {
      */
     private boolean showSingleNodeJobs = true;
     
+    /**
+     * toggle to determine whether jobs with no labels should be shown
+     * in the dashboard
+     */
+    private boolean showLabellessJobs = true;
+    
     public GlobalSettings() {
         // this loads the settings from this plugin xml file
         // into this instance's private members
@@ -83,6 +89,7 @@ public class GlobalSettings extends GlobalConfiguration {
         detailedView = formData.getBoolean("detailedView");
         dashboardOrphanedJobsDetailedView = formData.getBoolean("dashboardOrphanedJobsDetailedView");
         showSingleNodeJobs = formData.getBoolean("showSingleNodeJobs");
+        showLabellessJobs = formData.getBoolean("showLabellessJobs");
         
         // save this instance members to the plugin configuration file
         save();
@@ -99,5 +106,9 @@ public class GlobalSettings extends GlobalConfiguration {
     
     public boolean getShowSingleNodeJobs() {
         return showSingleNodeJobs;
+    }
+    
+    public boolean getShowLabellessJobs() {
+        return showLabellessJobs;
     }
 }
