@@ -55,7 +55,11 @@ THE SOFTWARE.
       </j:forEach>
       <br/><br/>
 
+      <j:set var="allExclusive" value="${it.onlyExclusiveNodes}" />
       <h2>Nodes</h2>
+      <j:if test="${allExclusive}">
+        Note: all nodes are in exclusive mode.
+      </j:if>
       <j:set var="nodes" value="${it.nodesData}" />
       <j:forEach var="node" items="${nodes}">
         <div>
@@ -104,6 +108,26 @@ THE SOFTWARE.
                 </j:if>
               </div>
             </j:forEach>
+          </j:otherwise>
+        </j:choose>
+      </j:if>
+      <br/><br/>
+
+      <j:if test="${it.showLabellessJobs}">  
+        <j:set var="labellessJobs" value="${it.jobsWithNoLabels}" />
+        <h2>Label-less jobs</h2>
+        <j:choose>
+          <j:when test="${empty(labellessJobs)}">There are no jobs with no defined label.</j:when>
+          <j:otherwise>
+            The following job(s) have no assigned labels.<br/><br/>
+            <j:if test="${it.dashboardOrphanedJobsDetailedView}">
+              <t:projectView jobs="${labellessJobs}"/>
+            </j:if>
+            <j:if test="${!it.dashboardOrphanedJobsDetailedView}">
+              <j:forEach var="job" items="${labellessJobs}">
+                <a href="${job.absoluteUrl}">${job.name}</a>&#160;
+              </j:forEach>
+            </j:if>
           </j:otherwise>
         </j:choose>
       </j:if>

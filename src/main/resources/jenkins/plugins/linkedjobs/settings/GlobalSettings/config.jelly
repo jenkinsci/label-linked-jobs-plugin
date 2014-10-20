@@ -36,6 +36,10 @@ THE SOFTWARE.
       description="Uncheck if you want to see condensed lists of jobs on the Labels Dashboard">
       <f:checkbox />
     </f:entry>
+    <f:entry title="Labels Dashboard - Label-less jobs" field="showLabellessJobs"
+      description="Check if you want to see the list of jobs with no labels on the Labels Dashboard">
+      <f:checkbox />
+    </f:entry>
     <f:entry title="List single-node/exclusive jobs" field="showSingleNodeJobs"
       description="Check if you want to see the jobs that can run on only one node (Labels Dashboard, Linked Jobs for nodes)">
       <f:checkbox />

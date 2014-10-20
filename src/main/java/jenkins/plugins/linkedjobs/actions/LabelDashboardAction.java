@@ -41,6 +41,7 @@ import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Label;
 import hudson.model.Node;
+import hudson.model.Node.Mode;
 import hudson.model.labels.LabelAtom;
 import hudson.model.RootAction;
 import hudson.model.TopLevelItem;
@@ -71,6 +72,10 @@ public class LabelDashboardAction implements RootAction {
     
     public boolean getShowSingleNodeJobs() {
         return GlobalSettings.get().getShowSingleNodeJobs();
+    }
+    
+    public boolean getShowLabellessJobs() {
+        return GlobalSettings.get().getShowLabellessJobs();
     }
     
     /**
@@ -128,9 +133,55 @@ public class LabelDashboardAction implements RootAction {
         return result;
     }
     
+    /**
+     * JENKINS-25188 - Orphaned jobs do not show jobs without label when all nodes set to Label restrictions
+     * This function scans all nodes to determine if at least one is in non-exclusive mode,
+     * meaning it can be used to run jobs with no labels.
+     * If there is no such node, jobs without labels can't be run at all
+     * @return true only if all nodes are set to Mode.EXCLUSIVE
+     */
+    public boolean getOnlyExclusiveNodes() {
+        Jenkins jenkins = Jenkins.getInstance();
+        if (!Mode.EXCLUSIVE.equals(jenkins.getMode())) {
+            return false;
+        }
+        Iterator<Node> i = jenkins.getNodes().iterator();
+        while (i.hasNext()) {
+            if (!Mode.EXCLUSIVE.equals(i.next().getMode())) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    // JENKINS-25163 - Add list of jobs that do not have a label
+    // this function returns all jobs that have no associated label(s)
+    public ArrayList<AbstractProject<?, ?>> getJobsWithNoLabels() {
+        ArrayList<AbstractProject<?, ?>> noLabelsJobs = new ArrayList<AbstractProject<?, ?>>();
+        for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+            if (!(job instanceof TopLevelItem)) {
+                // consider only TopLevelItem - not 100% sure why, though...
+                continue;
+            }
+            Label jobLabel = job.getAssignedLabel();
+            if (jobLabel == null) {
+                noLabelsJobs.add(job);
+            }
+        }
+        // sort list by jobs names
+        Collections.sort(noLabelsJobs, new Comparator<AbstractProject<?, ?>>() {
+            public int compare(AbstractProject<?, ?> o1, AbstractProject<?, ?> o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        return noLabelsJobs;
+    }
+    
     // this function finds all jobs that can't run on any nodes
     // because of labels (mis-)configuration
     public ArrayList<AbstractProject<?, ?>> getOrphanedJobs() {
+        boolean bOnlyExclusiveNodes = getOnlyExclusiveNodes();
+
         ArrayList<AbstractProject<?, ?>> orphanedJobs = new ArrayList<AbstractProject<?, ?>>();
         for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
             if (!(job instanceof TopLevelItem)) {
@@ -140,7 +191,12 @@ public class LabelDashboardAction implements RootAction {
             Label jobLabel = job.getAssignedLabel();
             if (jobLabel == null) {
                 // if job.getAssignedLabel is null then the job can run
-                // anywhere, so we're fine
+                // anywhere, so we're fine...
+                if (bOnlyExclusiveNodes) {
+                    // ... except if all nodes are in exclusive mode!
+                    // JENKINS-25188 - Orphaned jobs do not show jobs without label when all nodes set to Label restrictions
+                    orphanedJobs.add(job);
+                }
                 continue;
             }
             Jenkins jenkins = Jenkins.getInstance();
