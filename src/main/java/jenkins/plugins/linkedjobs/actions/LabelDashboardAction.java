@@ -236,6 +236,12 @@ public class LabelDashboardAction implements RootAction {
                 continue;
             }
 
+            // switch to job.getRelevantLabels() ?
+            // that would make it applicable for hudson.matrix.MatrixProject.
+            // On the other hand, maybe we could ignore MatrixProject and
+            // try to process hudson.matrix.MatrixConfiguration, which are NOT TopLevelItem
+            // but are apparently part of the getAllItems loop
+            
             Label jobLabel = job.getAssignedLabel();
             if (jobLabel == null) {
                 // if job.getAssignedLabel is null then the job can run
