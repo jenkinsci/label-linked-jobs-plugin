@@ -57,12 +57,19 @@ THE SOFTWARE.
               </j:otherwise>
             </j:choose>
             </div><br/>
-            <j:if test="${it.detailedView}">
-              <t:projectView jobs="${group.jobs}"/>
+            <j:if test="${it.detailedView &amp;&amp; !empty(group.jobs)}">
+              <t:projectView jobs="${group.jobs}"/><br/>
             </j:if>
-            <j:if test="${!it.detailedView}">
+            <j:if test="${!it.detailedView &amp;&amp; !empty(group.jobs)}">
               <j:forEach var="job" items="${group.jobs}">
                 <a href="${job.absoluteUrl}">${job.name}</a>&#160;
+              </j:forEach>
+              <br/><br/>
+            </j:if>
+            <j:if test="${!empty(group.triggeredJobs)}">
+              Triggered jobs (triggering job):&#160;
+              <j:forEach var="triggeredjob" items="${group.triggeredJobs}">
+                <a href="${triggeredjob[0].absoluteUrl}">${triggeredjob[0].name}</a>(<a href="${triggeredjob[1].absoluteUrl}">${triggeredjob[1].name}</a>)&#160;
               </j:forEach>
             </j:if>
             <br/><br/>

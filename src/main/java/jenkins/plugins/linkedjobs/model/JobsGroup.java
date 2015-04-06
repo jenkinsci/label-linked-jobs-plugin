@@ -45,10 +45,14 @@ public class JobsGroup implements Comparable<JobsGroup> {
     private ArrayList<AbstractProject<?, ?>> jobs;
     // nodes that could run all jobs listed here considering their label
     private List<Node> applicableNodes;
+    
+    // list of jobs using this label and triggered by another job - JENKINS -27588
+    private ArrayList<AbstractProject<?, ?>[]> triggeredJobs;
 
     public JobsGroup(Label l) {
         label = l;
         jobs = new ArrayList<AbstractProject<?,?>>();
+        triggeredJobs = new ArrayList<AbstractProject<?,?>[]>();
         
         applicableNodes = new ArrayList<Node>();
         // list all nodes that could run jobs with this particular label
@@ -69,6 +73,13 @@ public class JobsGroup implements Comparable<JobsGroup> {
         jobs.add(job);
     }
     
+    public void addTriggeredJob(AbstractProject<?, ?> triggeredJob, AbstractProject<?, ?> triggeringJob) {
+        AbstractProject<?, ?> tmp[] = new AbstractProject<?, ?>[2];
+        tmp[0] = triggeredJob;
+        tmp[1] = triggeringJob;
+        triggeredJobs.add(tmp);
+    }
+    
     /************************************
      * functions used to render display in index.jelly
      ************************************/
@@ -83,6 +94,10 @@ public class JobsGroup implements Comparable<JobsGroup> {
     
     public List<AbstractProject<?, ?>> getJobs() {
         return jobs;
+    }
+    
+    public List<AbstractProject<?, ?>[]> getTriggeredJobs() {
+        return triggeredJobs;
     }
     
     public List<Node> getNodes() {
