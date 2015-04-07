@@ -1,7 +1,7 @@
 <!--
 The MIT License
  
-Copyright (C) 2014 Dominique Brice
+Copyright (C) 2014, 2015 Dominique Brice
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,10 +35,12 @@ THE SOFTWARE.
     <l:main-panel>
     
       <h2>Labels</h2>
+      <j:set var="unused" value="${it.refresh}" />
       <j:set var="labels" value="${it.labelsData}" />
       <j:forEach var="label" items="${labels}">
         <div>
           <j:set var="jobCount" value="${label.jobsCount}" />
+          <j:set var="triggeredJobCount" value="${label.triggeredJobsCount}" />
           <j:set var="nodeCount" value="${label.nodesCount}" />
           <j:set var="pluginActive" value="${label.pluginActiveForLabel}" />
           <h3><a href="${rootURL}/${label.labelURL}">${label.label}</a></h3>
@@ -48,7 +50,8 @@ THE SOFTWARE.
           <j:if test="${!pluginActive}">
             This label is used by ${jobCount} job<j:if test="${jobCount > 1}">s</j:if>. <a href="${rootURL}/${label.labelURL}configure">Activate</a> its Linked Jobs page to know more.
           </j:if>
-          <j:if test="${jobCount == 0}"><b><font color="red">You should verify your configuration.</font></b></j:if><br/>
+          <j:if test="${(jobCount + triggeredJobCount) == 0}"><b><font color="red">You should verify your configuration.</font></b></j:if><br/>
+          <j:if test="${triggeredJobCount > 0}">This label is used by ${triggeredJobCount} triggered job configuration<j:if test="${triggeredJobCount > 1}">s</j:if>.<br/></j:if>
           This label is defined by ${nodeCount} node<j:if test="${nodeCount > 1}">s</j:if>.
           <j:if test="${nodeCount == 0}"><b><font color="red">You should verify your configuration.</font></b></j:if>
         </div>
@@ -64,24 +67,38 @@ THE SOFTWARE.
       <j:forEach var="node" items="${nodes}">
         <div>
           <j:set var="jobCount" value="${node.jobsCount}" />
+          <j:set var="triggeredJobCount" value="${node.triggeredJobsCount}" />
           <h4><a href="${rootURL}/${node.nodeURL}">${node.name}</a></h4>
-          This node's <a href="${rootURL}/${node.labelURL}">label</a> is used directly by ${jobCount} job<j:if test="${jobCount > 1}">s</j:if>.
+          This node's <a href="${rootURL}/${node.labelURL}">label</a> is used by ${jobCount} job<j:if test="${jobCount > 1}">s</j:if>.
+          <j:if test="${triggeredJobCount > 0}"><br/>This node's label is used by ${triggeredJobCount} triggered job<j:if test="${triggeredJobCount > 1}">s</j:if>.</j:if>
         </div>
       </j:forEach>
       <br/><br/>
 
       <j:set var="orphanedJobs" value="${it.orphanedJobs}" />
+      <j:set var="orphanedTriggeredJobs" value="${it.orphanedTriggeredJobs}" />
       <h2>Orphaned Jobs</h2>
       <j:choose>
-        <j:when test="${empty(orphanedJobs)}">There are no orphaned jobs. Well done with your configuration!</j:when>
+        <j:when test="${empty(orphanedJobs) &amp;&amp; empty(orphanedTriggeredJobs)}">There are no orphaned jobs. Well done with your configuration!</j:when>
         <j:otherwise>
-          The following job(s) cannot run on any node because of label (mis-)configuration. Get to it!<br/><br/>
-          <j:if test="${it.dashboardOrphanedJobsDetailedView}">
-            <t:projectView jobs="${orphanedJobs}"/>
+          <j:if test="${!empty(orphanedJobs)}">
+            The following job(s) cannot run on any node because of label (mis-)configuration. Get to it!<br/><br/>
+            <j:if test="${it.dashboardOrphanedJobsDetailedView}">
+              <t:projectView jobs="${orphanedJobs}"/>
+            </j:if>
+            <j:if test="${!it.dashboardOrphanedJobsDetailedView}">
+              <j:forEach var="job" items="${orphanedJobs}" varStatus="loopStatus">
+                <a href="${job.absoluteUrl}">${job.name}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
+              </j:forEach>
+            </j:if>
           </j:if>
-          <j:if test="${!it.dashboardOrphanedJobsDetailedView}">
-            <j:forEach var="job" items="${orphanedJobs}">
-              <a href="${job.absoluteUrl}">${job.name}</a>&#160;
+          <j:if test="${!empty(orphanedTriggeredJobs)}">
+            <br/><br/>Orphaned triggered jobs (triggering job(s)):&#160;
+            <j:forEach var="triggeredjob" items="${orphanedTriggeredJobs}" varStatus="outerLoopStatus">
+              <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a>&#160;(<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}" varStatus="innerLoopStatus">
+                  <a href="${triggeringJob.absoluteUrl}">${triggeringJob.name}</a>
+                  <j:if test="${!innerLoopStatus.last}">,&#160;</j:if>
+                </j:forEach>)<j:if test="${!outerLoopStatus.last}">,&#160;</j:if>
             </j:forEach>
           </j:if>
         </j:otherwise>
@@ -98,14 +115,24 @@ THE SOFTWARE.
             <j:forEach var="node" items="${singleNodeJobsByNode}">
               <div>
                 <h4><a href="${rootURL}/${node.nodeURL}">${node.name}</a></h4>
+                
                 <j:if test="${it.dashboardOrphanedJobsDetailedView}">
                   <t:projectView jobs="${node.jobs}"/>
                 </j:if>
                 <j:if test="${!it.dashboardOrphanedJobsDetailedView}">
-                  <j:forEach var="job" items="${node.jobs}">
-                    <a href="${job.absoluteUrl}">${job.name}</a>&#160;
+                  <j:forEach var="job" items="${node.jobs}" varStatus="loopStatus">
+                    <a href="${job.absoluteUrl}">${job.name}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
                   </j:forEach>
                 </j:if>
+                
+                <j:forEach var="triggeredjob" items="${node.triggeredJobs}" varStatus="outerLoopStatus">
+                  <j:if test="${outerLoopStatus.first}"><br/><br/></j:if>
+                  <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a>&#160;(<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}" varStatus="innerLoopStatus">
+                    <a href="${triggeringJob.absoluteUrl}">${triggeringJob.name}</a>
+                    <j:if test="${!innerLoopStatus.last}">,&#160;</j:if>
+                  </j:forEach>)<j:if test="${!outerLoopStatus.last}">,&#160;</j:if>
+                </j:forEach>
+                
               </div>
             </j:forEach>
           </j:otherwise>
@@ -124,8 +151,8 @@ THE SOFTWARE.
               <t:projectView jobs="${labellessJobs}"/>
             </j:if>
             <j:if test="${!it.dashboardOrphanedJobsDetailedView}">
-              <j:forEach var="job" items="${labellessJobs}">
-                <a href="${job.absoluteUrl}">${job.name}</a>&#160;
+              <j:forEach var="job" items="${labellessJobs}" varStatus="loopStatus">
+                <a href="${job.absoluteUrl}">${job.name}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
               </j:forEach>
             </j:if>
           </j:otherwise>

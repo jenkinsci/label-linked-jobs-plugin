@@ -25,6 +25,7 @@
 package jenkins.plugins.linkedjobs.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import hudson.model.AbstractProject;
 import hudson.model.Node;
@@ -37,20 +38,31 @@ public class LabelAtomData implements Comparable<LabelAtomData> {
     private ArrayList<AbstractProject<?, ?>> jobs;
     // list all nodes defining this label
     private ArrayList<Node> nodes;
+    // list of triggered jobs sharing this label
+    private ArrayList<TriggeredJob> triggeredJobs;
 
     public LabelAtomData(LabelAtom l) {
         label = l;
         jobs = new ArrayList<AbstractProject<?, ?>>();
+        triggeredJobs = new ArrayList<TriggeredJob>();
         nodes = new ArrayList<Node>();
     }
 
     public void add(AbstractProject<?, ?> job) {
         jobs.add(job);
     }
+    
+    public void addTriggeredJobs(Collection<TriggeredJob> jobs) {
+        triggeredJobs.addAll(jobs);
+    }
 
     public void add(Node n) {
         nodes.add(n);
-    }    
+    }
+    
+    public LabelAtom getLabelAtom() {
+        return label;
+    }
     
     /************************************
      * functions used to render display in index.jelly
@@ -66,6 +78,10 @@ public class LabelAtomData implements Comparable<LabelAtomData> {
     
     public int getJobsCount() {
         return jobs.size();
+    }
+
+    public int getTriggeredJobsCount() {
+        return triggeredJobs.size();
     }
     
     public int getNodesCount() {

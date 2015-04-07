@@ -25,6 +25,7 @@
 package jenkins.plugins.linkedjobs.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import jenkins.model.Jenkins;
@@ -34,17 +35,24 @@ import hudson.model.Node;
 public class NodeData implements Comparable<NodeData> {
 
     private Node node;
-    // list of jobs using this node directly (by label)
+    // list of jobs functionally tied to this node
     private ArrayList<AbstractProject<?, ?>> jobs;
+    // list of triggered jobs functionally tied to this node
+    private ArrayList<TriggeredJob> triggeredJobs;
 
     public NodeData(Node n) {
         jobs = new ArrayList<AbstractProject<?, ?>>();
+        triggeredJobs = new ArrayList<TriggeredJob>();
         node = n;
     }
 
     public void addJob(AbstractProject<?, ?> job) {
         jobs.add(job);
-    }    
+    }
+    
+    public void addTriggeredJobs(Collection<TriggeredJob> jobs) {
+        triggeredJobs.addAll(jobs);
+    }
     
     /************************************
      * functions used to render display in index.jelly
@@ -66,8 +74,16 @@ public class NodeData implements Comparable<NodeData> {
         return jobs.size();
     }
     
+    public int getTriggeredJobsCount() {
+        return triggeredJobs.size();
+    }
+    
     public List<AbstractProject<?, ?>> getJobs() {
         return jobs;
+    }
+    
+    public List<TriggeredJob> getTriggeredJobs() {
+        return triggeredJobs;
     }
 
     /************************************

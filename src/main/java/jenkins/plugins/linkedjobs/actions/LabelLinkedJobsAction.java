@@ -129,7 +129,9 @@ public class LabelLinkedJobsAction implements Action {
             
             // JENKINS-27588
             // need to explore more in depth jobs configuration to look for jobs triggered by this label
-            listTriggeredJobs(job, tmpResult);
+            if (parameterizedTriggerAndNodeLabelParameterPluginsInstalled && job instanceof Project) {
+                listTriggeredJobs((Project)job, tmpResult);
+            }
         }
 
         ArrayList<JobsGroup> result = new ArrayList<JobsGroup>(tmpResult.size());
@@ -149,50 +151,47 @@ public class LabelLinkedJobsAction implements Action {
     }
 
     // JENKINS-27588
-    // support configuration possible with parameterized-trigger & nodelabelparameter plugins
-    private void listTriggeredJobs(AbstractProject triggeringJob, HashMap<Label, JobsGroup> tmpResult) {
-        if (parameterizedTriggerAndNodeLabelParameterPluginsInstalled && triggeringJob instanceof Project) {
-            List<Builder> builders = ((Project) triggeringJob).getBuilders();
-            for (Builder builder : builders) {
-                if (!(builder instanceof TriggerBuilder)) {
+    // support jobs' configuration that uses parameterized-trigger & nodelabelparameter plugins
+    // where a job can trigger other jobs and override their label settings
+    private void listTriggeredJobs(Project triggeringJob, HashMap<Label, JobsGroup> tmpResult) {
+        for (Builder builder : (List<Builder>)triggeringJob.getBuilders()) {
+            if (!(builder instanceof TriggerBuilder)) {
+                continue;
+            }
+            // this job is triggering other jobs...
+            List<BlockableBuildTriggerConfig> configs = ((TriggerBuilder) builder).getConfigs();
+            for (BlockableBuildTriggerConfig config : configs) {
+                List<AbstractBuildParameterFactory> factories = config.getConfigFactories();
+                if (factories == null) {
                     continue;
                 }
-                // this job is triggering other jobs...
-                List<BlockableBuildTriggerConfig> configs = ((TriggerBuilder) builder).getConfigs();
-                if (configs != null) {
-                    for (BlockableBuildTriggerConfig config : configs) {
-                        List<AbstractBuildParameterFactory> factories = config.getConfigFactories();
-                        if (factories == null) {
-                            continue;
-                        }
-                        for (AbstractBuildParameterFactory factory : factories) {
-                            if (!(factory instanceof AllNodesForLabelBuildParameterFactory)) {
-                                continue;
-                            }
+                for (AbstractBuildParameterFactory factory : factories) {
+                    if (!(factory instanceof AllNodesForLabelBuildParameterFactory)) {
+                        continue;
+                    }
 
-                            // and it's triggering jobs based on specific label
-                            // using the nodelabelparameter plugin
-                            Label jobLabel = Jenkins.getInstance().getLabel(
-                                    ((AllNodesForLabelBuildParameterFactory) factory).nodeLabel);
-                            // TODO: expand nodeLabel?
-                            if (isAssignedLabelLinked(jobLabel)) {
-                                JobsGroup matchingJobGroup = tmpResult.get(jobLabel);
-                                if (matchingJobGroup == null) {
-                                    matchingJobGroup = new JobsGroup(jobLabel);
-                                    tmpResult.put(jobLabel, matchingJobGroup);
-                                }
-                                // get the list of all triggered jobs
-                                List<AbstractProject> triggeredJobs = config.getProjectList(null);
-                                if (triggeredJobs != null) {
-                                    for (AbstractProject triggeredJob : triggeredJobs) {
-                                        // and store them, associated to the
-                                        // triggering job
-                                        matchingJobGroup.addTriggeredJob(triggeredJob, triggeringJob);
-                                    }
-                                }
+                    // and it's triggering jobs based on specific label
+                    // using the nodelabelparameter plugin
+                    Label jobLabel = Jenkins.getInstance().getLabel(
+                            ((AllNodesForLabelBuildParameterFactory) factory).nodeLabel);
+                    // TODO: expand nodeLabel?
+                    if (isAssignedLabelLinked(jobLabel)) {
+                        JobsGroup matchingJobGroup = tmpResult.get(jobLabel);
+                        if (matchingJobGroup == null) {
+                            matchingJobGroup = new JobsGroup(jobLabel);
+                            tmpResult.put(jobLabel, matchingJobGroup);
+                        }
+                        // get the list of all triggered jobs
+                        List<AbstractProject> triggeredJobs = config.getProjectList(null);
+                        if (triggeredJobs != null) {
+                            for (AbstractProject triggeredJob : triggeredJobs) {
+                                // and store them, associated to the
+                                // triggering job
+                                matchingJobGroup.addTriggeredJob(triggeredJob, triggeringJob);
                             }
                         }
                     }
+
                 }
             }
         }

@@ -29,6 +29,8 @@ import hudson.model.Label;
 import hudson.model.Node;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 import jenkins.model.Jenkins;
@@ -47,12 +49,12 @@ public class JobsGroup implements Comparable<JobsGroup> {
     private List<Node> applicableNodes;
     
     // list of jobs using this label and triggered by another job - JENKINS -27588
-    private ArrayList<AbstractProject<?, ?>[]> triggeredJobs;
+    private HashMap<AbstractProject<?, ?>, TriggeredJob> triggeredJobs;
 
     public JobsGroup(Label l) {
         label = l;
         jobs = new ArrayList<AbstractProject<?,?>>();
-        triggeredJobs = new ArrayList<AbstractProject<?,?>[]>();
+        triggeredJobs = new HashMap<AbstractProject<?,?>, TriggeredJob>();
         
         applicableNodes = new ArrayList<Node>();
         // list all nodes that could run jobs with this particular label
@@ -74,10 +76,14 @@ public class JobsGroup implements Comparable<JobsGroup> {
     }
     
     public void addTriggeredJob(AbstractProject<?, ?> triggeredJob, AbstractProject<?, ?> triggeringJob) {
-        AbstractProject<?, ?> tmp[] = new AbstractProject<?, ?>[2];
-        tmp[0] = triggeredJob;
-        tmp[1] = triggeringJob;
-        triggeredJobs.add(tmp);
+        TriggeredJob tj = triggeredJobs.get(triggeredJob);
+        if (tj != null) {
+            tj.addTriggeringJob(triggeringJob);
+        }
+        else {
+            tj = new TriggeredJob(triggeredJob, triggeringJob);
+            triggeredJobs.put(triggeredJob, tj);
+        }
     }
     
     /************************************
@@ -96,8 +102,8 @@ public class JobsGroup implements Comparable<JobsGroup> {
         return jobs;
     }
     
-    public List<AbstractProject<?, ?>[]> getTriggeredJobs() {
-        return triggeredJobs;
+    public Collection<TriggeredJob> getTriggeredJobs() {
+        return triggeredJobs.values();
     }
     
     public List<Node> getNodes() {
@@ -109,7 +115,7 @@ public class JobsGroup implements Comparable<JobsGroup> {
     }
     
     public boolean getHasMoreThanOneJob() {
-        return jobs.size() > 1;
+        return (jobs.size() + triggeredJobs.size()) > 1;
     }
 
     /************************************
