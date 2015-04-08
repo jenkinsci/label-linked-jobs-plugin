@@ -31,7 +31,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import jenkins.model.Jenkins;
+import jenkins.plugins.linkedjobs.helpers.TriggeredJobsHelper;
 import jenkins.plugins.linkedjobs.model.JobsGroup;
+import jenkins.plugins.linkedjobs.model.TriggeredJob;
 import jenkins.plugins.linkedjobs.settings.GlobalSettings;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -154,6 +156,24 @@ public class ComputerLinkedJobsAction implements Action {
                     tmpResult.put(jobLabel, matchingJobGroup);
                 }
                 matchingJobGroup.addJob(job);
+            }
+        }
+        
+        // then browse list of triggered jobs
+        HashMap<Label, HashMap<AbstractProject<?,?>, TriggeredJob>> triggeredJobsByLabel =
+                new HashMap<Label, HashMap<AbstractProject<?,?>, TriggeredJob>>();
+        TriggeredJobsHelper.populateTriggeredJobs(triggeredJobsByLabel);
+        for (Label label : triggeredJobsByLabel.keySet()) {
+            // can this label run on this node?
+            if (label.matches(node)) {
+                // yes!
+                JobsGroup matchingJobGroup = tmpResult.get(label);
+                if (matchingJobGroup == null) {
+                    matchingJobGroup = new JobsGroup(label);
+                    tmpResult.put(label, matchingJobGroup);
+                }
+                // get the list of all triggered jobs
+                matchingJobGroup.addTriggeredJobs(triggeredJobsByLabel.get(label).values());
             }
         }
 

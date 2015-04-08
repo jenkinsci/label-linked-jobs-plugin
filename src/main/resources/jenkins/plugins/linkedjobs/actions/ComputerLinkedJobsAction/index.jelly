@@ -55,8 +55,10 @@ THE SOFTWARE.
           There are no jobs that are linked to this node, based on label configuration.
         </j:when>
         <j:otherwise>
+
           <j:forEach var="group" items="${groups}">
             <h3>Job<j:if test="${group.hasMoreThanOneJob}">s</j:if> configured with <a href="${rootURL}/${group.labelURL}">${group.label}</a></h3>
+            
             <j:if test="${it.detailedView}">
               <t:projectView jobs="${group.jobs}"/>
             </j:if>
@@ -65,7 +67,19 @@ THE SOFTWARE.
                 <a href="${job.absoluteUrl}">${job.name}</a>&#160;
               </j:forEach>
             </j:if>
+            
+            <j:if test="${!empty(group.triggeredJobs)}">
+              <br/><br/>Triggered jobs (triggering job(s)):&#160;
+              <j:forEach var="triggeredjob" items="${group.triggeredJobs}" varStatus="outerLoopStatus">
+                <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a>&#160;(<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}" varStatus="innerLoopStatus">
+                  <a href="${triggeringJob.absoluteUrl}">${triggeringJob.name}</a>
+                  <j:if test="${!innerLoopStatus.last}">,&#160;</j:if>
+                </j:forEach>)<j:if test="${!outerLoopStatus.last}">,&#160;</j:if>
+              </j:forEach>
+            </j:if>
+            
           </j:forEach>
+
         </j:otherwise>
       </j:choose>
       <br/><br/>
@@ -82,6 +96,7 @@ THE SOFTWARE.
             The following job(s) can run only on this node because of label (mis-)configuration, so you may have trouble if it goes down.
             <j:forEach var="group" items="${exclusiveGroups}">
               <h3>Job<j:if test="${group.hasMoreThanOneJob}">s</j:if> configured with <a href="${rootURL}/${group.labelURL}">${group.label}</a></h3>
+              
               <j:if test="${it.detailedView}">
                 <t:projectView jobs="${group.jobs}"/>
               </j:if>
@@ -90,6 +105,17 @@ THE SOFTWARE.
                   <a href="${job.absoluteUrl}">${job.name}</a>&#160;
                 </j:forEach>
               </j:if>
+              
+              <j:if test="${!empty(group.triggeredJobs)}">
+                <br/><br/>Triggered jobs (triggering job(s)):&#160;
+                <j:forEach var="triggeredjob" items="${group.triggeredJobs}" varStatus="outerLoopStatus">
+                  <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a>&#160;(<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}" varStatus="innerLoopStatus">
+                    <a href="${triggeringJob.absoluteUrl}">${triggeringJob.name}</a>
+                    <j:if test="${!innerLoopStatus.last}">,&#160;</j:if>
+                  </j:forEach>)<j:if test="${!outerLoopStatus.last}">,&#160;</j:if>
+                </j:forEach>
+              </j:if>
+             
               <br/><br/>
             </j:forEach>
           </j:otherwise>
