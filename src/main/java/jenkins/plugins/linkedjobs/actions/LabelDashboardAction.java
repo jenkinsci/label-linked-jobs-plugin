@@ -33,8 +33,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jvnet.jenkins.plugins.nodelabelparameter.parameterizedtrigger.AllNodesForLabelBuildParameterFactory;
-
 import jenkins.model.Jenkins;
 import jenkins.plugins.linkedjobs.helpers.TriggeredJobsHelper;
 import jenkins.plugins.linkedjobs.model.JobsGroup;
@@ -51,9 +49,6 @@ import hudson.model.Project;
 import hudson.model.labels.LabelAtom;
 import hudson.model.RootAction;
 import hudson.model.TopLevelItem;
-import hudson.plugins.parameterizedtrigger.AbstractBuildParameterFactory;
-import hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig;
-import hudson.plugins.parameterizedtrigger.TriggerBuilder;
 import hudson.tasks.Builder;
 
 /**
@@ -374,20 +369,6 @@ public class LabelDashboardAction implements RootAction {
         // sort list by node names
         Collections.sort(result);
         return result;
-    }
-    
-    /**
-     * @return true if at least one of the triggered jobs (if there are any..)
-     * is configured (in its triggering job) to run on only one node, because of its
-     * label
-     */
-    public boolean hasSingleNodeTriggeredJobs() {
-        for (Label label : m_triggeredJobsByLabel.keySet()) {
-            if (isSingleNode(label) == null) {
-                return true;
-            }
-        }
-        return false;
     }
     
     /**

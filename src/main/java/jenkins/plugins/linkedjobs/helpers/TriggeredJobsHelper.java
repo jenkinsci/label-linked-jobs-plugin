@@ -4,20 +4,28 @@ import hudson.model.AbstractProject;
 import hudson.model.JobProperty;
 import hudson.model.Label;
 import hudson.model.ParameterDefinition;
+import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Project;
+import hudson.model.StringParameterValue;
 import hudson.plugins.parameterizedtrigger.AbstractBuildParameterFactory;
 import hudson.plugins.parameterizedtrigger.AbstractBuildParameters;
 import hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig;
+import hudson.plugins.parameterizedtrigger.PredefinedBuildParameters;
 import hudson.plugins.parameterizedtrigger.TriggerBuilder;
 import hudson.tasks.Builder;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import jenkins.model.Jenkins;
 import jenkins.plugins.linkedjobs.model.TriggeredJob;
 
+import org.apache.tools.ant.filters.StringInputStream;
 import org.jvnet.jenkins.plugins.nodelabelparameter.LabelParameterDefinition;
 import org.jvnet.jenkins.plugins.nodelabelparameter.parameterizedtrigger.AllNodesForLabelBuildParameterFactory;
 import org.jvnet.jenkins.plugins.nodelabelparameter.parameterizedtrigger.NodeLabelBuildParameter;
@@ -68,6 +76,21 @@ public class TriggeredJobsHelper {
                             addTriggeredJob(triggeredJobsByLabel, ((NodeLabelBuildParameter)parameter).nodeLabel,
                                     config, triggeringJob);
                         }
+                        else if (parameter instanceof PredefinedBuildParameters) {
+                            // TODO: do something with predefined parameters, that could be
+                            // labels in triggered jobs configuration?
+                            try {
+                                Properties p = new Properties();
+                                p.load(new StringInputStream(((PredefinedBuildParameters)parameter).getProperties()));
+                                for (Map.Entry<Object, Object> entry : p.entrySet()) {
+                                    String strParameterName = entry.getKey().toString();
+                                    String strParameterValue = entry.getValue().toString();
+                                }
+                            }
+                            catch (IOException ioe) {
+                                // TODO: handle exception
+                            }
+                        }
                     }
                     
                     // use case two: a ParameterFactories section
@@ -93,8 +116,16 @@ public class TriggeredJobsHelper {
     
     private static void addTriggeredJob(HashMap<Label, HashMap<AbstractProject<?,?>, TriggeredJob>> triggeredJobsByLabel,
             String strLabel, BlockableBuildTriggerConfig config, AbstractProject<?, ?> triggeringJob) {
-        
-        // TODO: expand nodeLabel?
+
+        // if label contains a macro, ignore it altogether. It could be complicated, or even impossible
+        // to expand the macro without being in the context of a build
+        // see JENKINS-27588
+        int start = strLabel.indexOf("${");
+        int end = strLabel.indexOf("}");
+        if (0 <= start && start <= end) {
+            return;
+        }
+
         Label label = Jenkins.getInstance().getLabel(strLabel);
         
         HashMap<AbstractProject<?, ?>, TriggeredJob> jobsTriggeredByCurrentLabel = triggeredJobsByLabel.get(label);
