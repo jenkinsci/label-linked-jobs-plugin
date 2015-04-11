@@ -27,13 +27,16 @@ package jenkins.plugins.linkedjobs.model;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import jenkins.model.Jenkins;
+import jenkins.plugins.linkedjobs.actions.LabelLinkedJobsAction;
 import hudson.model.AbstractProject;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
+import hudson.util.VersionNumber;
 
 public class LabelAtomData implements Comparable<LabelAtomData> {
 
-    private final LabelAtom label;
+    private final LabelAtom labelAtom;
     // list of jobs sharing this label
     private ArrayList<AbstractProject<?, ?>> jobs;
     // list all nodes defining this label
@@ -42,7 +45,7 @@ public class LabelAtomData implements Comparable<LabelAtomData> {
     private ArrayList<TriggeredJob> triggeredJobs;
 
     public LabelAtomData(LabelAtom l) {
-        label = l;
+        labelAtom = l;
         jobs = new ArrayList<AbstractProject<?, ?>>();
         triggeredJobs = new ArrayList<TriggeredJob>();
         nodes = new ArrayList<Node>();
@@ -61,19 +64,29 @@ public class LabelAtomData implements Comparable<LabelAtomData> {
     }
     
     public LabelAtom getLabelAtom() {
-        return label;
+        return labelAtom;
     }
     
     /************************************
      * functions used to render display in index.jelly
      ************************************/
     
+    public String getDescription() {
+        // configurable description for LabelAtom was implemented in Jenkins core v1.580
+        if (Jenkins.getVersion() != null && !Jenkins.getVersion().isOlderThan(new VersionNumber("1.580"))) {
+            return labelAtom.getDescription() != null && labelAtom.getDescription().trim().length() > 0 ? labelAtom.getDescription() : null;
+        }
+        else {
+            return null;
+        }
+    }
+    
     public String getLabel() {
-        return label.getDisplayName();
+        return labelAtom.getDisplayName();
     }
     
     public String getLabelURL() {
-        return label.getUrl();
+        return labelAtom.getUrl();
     }
     
     public int getJobsCount() {
@@ -89,8 +102,8 @@ public class LabelAtomData implements Comparable<LabelAtomData> {
     }
     
     public boolean getPluginActiveForLabel() {
-        for (hudson.model.Action a : label.getActions()) {
-            if (a instanceof jenkins.plugins.linkedjobs.actions.LabelLinkedJobsAction) {
+        for (hudson.model.Action a : labelAtom.getActions()) {
+            if (a instanceof LabelLinkedJobsAction) {
                 return true;
             }
         }
@@ -102,6 +115,6 @@ public class LabelAtomData implements Comparable<LabelAtomData> {
      ************************************/
     
     public int compareTo(LabelAtomData o) {
-        return this.label.compareTo(o.label);
+        return this.labelAtom.compareTo(o.labelAtom);
     }
 }

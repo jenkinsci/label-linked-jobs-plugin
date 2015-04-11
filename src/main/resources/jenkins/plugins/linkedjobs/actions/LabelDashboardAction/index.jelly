@@ -43,7 +43,8 @@ THE SOFTWARE.
           <j:set var="triggeredJobCount" value="${label.triggeredJobsCount}" />
           <j:set var="nodeCount" value="${label.nodesCount}" />
           <j:set var="pluginActive" value="${label.pluginActiveForLabel}" />
-          <h3><a href="${rootURL}/${label.labelURL}">${label.label}</a></h3>
+          <j:set var="description" value="${label.description}" />
+          <h4><a href="${rootURL}/${label.labelURL}">${label.label}</a><j:if test="${description != null}">&#160;(${description})</j:if></h4>
           <j:if test="${pluginActive}">
             This label is used by <a href="${rootURL}/${label.labelURL}linkedjobs">${jobCount} job<j:if test="${jobCount > 1}">s</j:if></a>.
           </j:if>
