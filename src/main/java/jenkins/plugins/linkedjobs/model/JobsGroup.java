@@ -47,13 +47,17 @@ public class JobsGroup implements Comparable<JobsGroup> {
     // nodes that could run all jobs listed here considering their label
     private List<Node> applicableNodes;
     
-    // list of jobs using this label and triggered by another job - JENKINS -27588
+    // list of jobs using this label and triggered by another job - JENKINS-27588
     private ArrayList<TriggeredJob> triggeredJobs;
+    
+    // list of jobs using this label for the default value of their Label parameter - JENKINS-27588
+    private ArrayList<AbstractProject<?, ?>> jobsWithDefaultValue;
 
     public JobsGroup(Label l) {
         label = l;
         jobs = new ArrayList<AbstractProject<?,?>>();
         triggeredJobs = new ArrayList<TriggeredJob>();
+        jobsWithDefaultValue = new ArrayList<AbstractProject<?,?>>();
         
         applicableNodes = new ArrayList<Node>();
         // list all nodes that could run jobs with this particular label
@@ -78,6 +82,10 @@ public class JobsGroup implements Comparable<JobsGroup> {
         triggeredJobs.addAll(jobs);
     }
     
+    public void addJobsWithDefaultValue(Collection<AbstractProject<?, ?>> jobs) {
+        jobsWithDefaultValue.addAll(jobs);
+    }
+    
     /************************************
      * functions used to render display in index.jelly
      ************************************/
@@ -98,6 +106,10 @@ public class JobsGroup implements Comparable<JobsGroup> {
         return triggeredJobs;
     }
     
+    public List<AbstractProject<?, ?>> getJobsWithDefaultValue() {
+        return jobsWithDefaultValue;
+    }
+    
     public List<Node> getNodes() {
         return applicableNodes;
     }
@@ -107,7 +119,7 @@ public class JobsGroup implements Comparable<JobsGroup> {
     }
     
     public boolean getHasMoreThanOneJob() {
-        return (jobs.size() + triggeredJobs.size()) > 1;
+        return (jobs.size() + triggeredJobs.size() + jobsWithDefaultValue.size()) > 1;
     }
 
     /************************************

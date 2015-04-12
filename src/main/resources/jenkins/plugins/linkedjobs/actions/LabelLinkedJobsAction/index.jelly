@@ -77,7 +77,16 @@ THE SOFTWARE.
                   <j:if test="${!innerLoopStatus.last}">,&#160;</j:if>
                 </j:forEach>)<j:if test="${!outerLoopStatus.last}">,&#160;</j:if>
               </j:forEach>
+              <br/><br/>
             </j:if>
+            
+            <j:if test="${!empty(group.jobsWithDefaultValue)}">
+              Job(s) using this label as default value for a Label parameter:&#160;
+              <j:forEach var="job" items="${group.jobsWithDefaultValue}" varStatus="loopStatus">
+                <a href="${job.absoluteUrl}">${job.name}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
+              </j:forEach>
+            </j:if>
+            
             <br/><br/>
           </j:forEach>
         </j:otherwise>

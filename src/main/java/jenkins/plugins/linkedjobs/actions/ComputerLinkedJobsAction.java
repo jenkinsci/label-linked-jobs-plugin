@@ -176,6 +176,20 @@ public class ComputerLinkedJobsAction implements Action {
                 matchingJobGroup.addTriggeredJobs(triggeredJobsByLabel.get(label).values());
             }
         }
+        
+        // then browse list of jobs with a Label parameter with a default value
+        HashMap<Label, List<AbstractProject<?,?>>> jobsByDefaultLabel = new HashMap<Label, List<AbstractProject<?,?>>>();
+        TriggeredJobsHelper.populateJobsWithLabelDefaultValue(jobsByDefaultLabel);
+        for (Label label : jobsByDefaultLabel.keySet()) {
+            if (label.matches(node)) {
+                JobsGroup matchJobsGroup = tmpResult.get(label);
+                if (matchJobsGroup == null) {
+                    matchJobsGroup = new JobsGroup(label);
+                    tmpResult.put(label, matchJobsGroup);
+                }
+                matchJobsGroup.addJobsWithDefaultValue(jobsByDefaultLabel.get(label));
+            }
+        }
 
         ArrayList<JobsGroup> result = new ArrayList<JobsGroup>(tmpResult.size());
         result.addAll(tmpResult.values());

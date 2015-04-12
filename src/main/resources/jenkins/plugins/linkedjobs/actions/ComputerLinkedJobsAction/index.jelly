@@ -59,30 +59,40 @@ THE SOFTWARE.
           <j:forEach var="group" items="${groups}">
             <h3>Job<j:if test="${group.hasMoreThanOneJob}">s</j:if> configured with <a href="${rootURL}/${group.labelURL}">${group.label}</a></h3>
             
-            <j:if test="${it.detailedView}">
+            <j:if test="${it.detailedView  &amp;&amp; !empty(group.jobs)}">
               <t:projectView jobs="${group.jobs}"/>
+              <br/><br/>
             </j:if>
-            <j:if test="${!it.detailedView}">
+            <j:if test="${!it.detailedView  &amp;&amp; !empty(group.jobs)}">
               <j:forEach var="job" items="${group.jobs}">
                 <a href="${job.absoluteUrl}">${job.name}</a>&#160;
               </j:forEach>
+              <br/><br/>
             </j:if>
             
             <j:if test="${!empty(group.triggeredJobs)}">
-              <br/><br/>Triggered jobs (triggering job(s)):&#160;
+              Triggered jobs (triggering job(s)):&#160;
               <j:forEach var="triggeredjob" items="${group.triggeredJobs}" varStatus="outerLoopStatus">
                 <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a>&#160;(<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}" varStatus="innerLoopStatus">
                   <a href="${triggeringJob.absoluteUrl}">${triggeringJob.name}</a>
                   <j:if test="${!innerLoopStatus.last}">,&#160;</j:if>
                 </j:forEach>)<j:if test="${!outerLoopStatus.last}">,&#160;</j:if>
               </j:forEach>
+              <br/><br/>
             </j:if>
-            
+
+            <j:if test="${!empty(group.jobsWithDefaultValue)}">
+              Job(s) using this label as default value for a Label parameter:&#160;
+              <j:forEach var="job" items="${group.jobsWithDefaultValue}" varStatus="loopStatus">
+                <a href="${job.absoluteUrl}">${job.name}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
+              </j:forEach>
+              <br/><br/>
+            </j:if>
+
           </j:forEach>
 
         </j:otherwise>
       </j:choose>
-      <br/><br/>
         
       <j:if test="${it.showSingleNodeJobs}">
         
@@ -97,26 +107,35 @@ THE SOFTWARE.
             <j:forEach var="group" items="${exclusiveGroups}">
               <h3>Job<j:if test="${group.hasMoreThanOneJob}">s</j:if> configured with <a href="${rootURL}/${group.labelURL}">${group.label}</a></h3>
               
-              <j:if test="${it.detailedView}">
+              <j:if test="${it.detailedView  &amp;&amp; !empty(group.jobs)}">
                 <t:projectView jobs="${group.jobs}"/>
+                <br/><br/>
               </j:if>
-              <j:if test="${!it.detailedView}">
+              <j:if test="${!it.detailedView  &amp;&amp; !empty(group.jobs)}">
                 <j:forEach var="job" items="${group.jobs}">
                   <a href="${job.absoluteUrl}">${job.name}</a>&#160;
                 </j:forEach>
+                <br/><br/>
               </j:if>
               
               <j:if test="${!empty(group.triggeredJobs)}">
-                <br/><br/>Triggered jobs (triggering job(s)):&#160;
+                Triggered jobs (triggering job(s)):&#160;
                 <j:forEach var="triggeredjob" items="${group.triggeredJobs}" varStatus="outerLoopStatus">
                   <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a>&#160;(<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}" varStatus="innerLoopStatus">
                     <a href="${triggeringJob.absoluteUrl}">${triggeringJob.name}</a>
                     <j:if test="${!innerLoopStatus.last}">,&#160;</j:if>
                   </j:forEach>)<j:if test="${!outerLoopStatus.last}">,&#160;</j:if>
                 </j:forEach>
+                <br/><br/>
               </j:if>
-             
-              <br/><br/>
+
+              <j:if test="${!empty(group.jobsWithDefaultValue)}">
+                <j:forEach var="job" items="${group.jobsWithDefaultValue}" varStatus="loopStatus">
+                  <j:if test="${loopStatus.first}">By default value:&#160;</j:if>
+                  <a href="${job.absoluteUrl}">${job.name}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
+                </j:forEach>
+              </j:if>
+
             </j:forEach>
           </j:otherwise>
         </j:choose>
