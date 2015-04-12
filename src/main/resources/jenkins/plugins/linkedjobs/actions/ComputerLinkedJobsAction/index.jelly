@@ -81,9 +81,9 @@ THE SOFTWARE.
               <br/><br/>
             </j:if>
 
-            <j:if test="${!empty(group.jobsWithDefaultValue)}">
+            <j:if test="${!empty(group.jobsWithLabelDefaultValue)}">
               Job(s) using this label as default value for a Label parameter:&#160;
-              <j:forEach var="job" items="${group.jobsWithDefaultValue}" varStatus="loopStatus">
+              <j:forEach var="job" items="${group.jobsWithLabelDefaultValue}" varStatus="loopStatus">
                 <a href="${job.absoluteUrl}">${job.name}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
               </j:forEach>
               <br/><br/>
@@ -129,8 +129,8 @@ THE SOFTWARE.
                 <br/><br/>
               </j:if>
 
-              <j:if test="${!empty(group.jobsWithDefaultValue)}">
-                <j:forEach var="job" items="${group.jobsWithDefaultValue}" varStatus="loopStatus">
+              <j:if test="${!empty(group.jobsWithLabelDefaultValue)}">
+                <j:forEach var="job" items="${group.jobsWithLabelDefaultValue}" varStatus="loopStatus">
                   <j:if test="${loopStatus.first}">By default value:&#160;</j:if>
                   <a href="${job.absoluteUrl}">${job.name}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
                 </j:forEach>

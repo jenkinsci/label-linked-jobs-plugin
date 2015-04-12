@@ -143,7 +143,7 @@ THE SOFTWARE.
                 </j:if>
                 
                 <j:forEach var="triggeredjob" items="${node.triggeredJobs}" varStatus="outerLoopStatus">
-                  <j:if test="${outerLoopStatus.first}"><br/><br/>Triggered jobs (triggering job(s))</j:if>
+                  <j:if test="${outerLoopStatus.first}"><br/><br/>Triggered jobs (triggering job(s)):&#160;</j:if>
                   <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a>&#160;(<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}" varStatus="innerLoopStatus">
                     <a href="${triggeringJob.absoluteUrl}">${triggeringJob.name}</a>
                     <j:if test="${!innerLoopStatus.last}">,&#160;</j:if>

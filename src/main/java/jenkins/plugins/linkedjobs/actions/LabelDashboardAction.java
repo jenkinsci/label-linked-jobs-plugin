@@ -44,7 +44,6 @@ import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Label;
 import hudson.model.Node;
-import hudson.model.Node.Mode;
 import hudson.model.Project;
 import hudson.model.labels.LabelAtom;
 import hudson.model.RootAction;
@@ -142,7 +141,7 @@ public class LabelDashboardAction implements RootAction {
                 if (!tmpResult.containsKey(labelAtom)) {
                     tmpResult.put(labelAtom, new LabelAtomData(labelAtom));
                 }
-                tmpResult.get(labelAtom).add(job);
+                tmpResult.get(labelAtom).addJob(job);
             }
         }
         
@@ -199,12 +198,12 @@ public class LabelDashboardAction implements RootAction {
      */
     public static boolean getOnlyExclusiveNodes() {
         Jenkins jenkins = Jenkins.getInstance();
-        if (!Mode.EXCLUSIVE.equals(jenkins.getMode())) {
+        if (!Node.Mode.EXCLUSIVE.equals(jenkins.getMode())) {
             return false;
         }
         Iterator<Node> i = jenkins.getNodes().iterator();
         while (i.hasNext()) {
-            if (!Mode.EXCLUSIVE.equals(i.next().getMode())) {
+            if (!Node.Mode.EXCLUSIVE.equals(i.next().getMode())) {
                 return false;
             }
         }

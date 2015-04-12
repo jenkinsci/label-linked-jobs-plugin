@@ -80,9 +80,9 @@ THE SOFTWARE.
               <br/><br/>
             </j:if>
             
-            <j:if test="${!empty(group.jobsWithDefaultValue)}">
+            <j:if test="${!empty(group.jobsWithLabelDefaultValue)}">
               Job(s) using this label as default value for a Label parameter:&#160;
-              <j:forEach var="job" items="${group.jobsWithDefaultValue}" varStatus="loopStatus">
+              <j:forEach var="job" items="${group.jobsWithLabelDefaultValue}" varStatus="loopStatus">
                 <a href="${job.absoluteUrl}">${job.name}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
               </j:forEach>
             </j:if>

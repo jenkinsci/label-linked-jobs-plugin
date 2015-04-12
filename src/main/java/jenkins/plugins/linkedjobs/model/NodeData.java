@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (C) 2014 Dominique Brice
+ * Copyright (C) 2014, 2015 Dominique Brice
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,41 +24,16 @@
 
 package jenkins.plugins.linkedjobs.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import jenkins.model.Jenkins;
-import hudson.model.AbstractProject;
 import hudson.model.Node;
 
-public class NodeData implements Comparable<NodeData> {
+public class NodeData extends AbstractJobsGroup implements Comparable<NodeData> {
 
     private Node node;
-    // list of jobs functionally tied to this node
-    private ArrayList<AbstractProject<?, ?>> jobs;
-    // list of triggered jobs functionally tied to this node
-    private ArrayList<TriggeredJob> triggeredJobs;
-    // list of jobs using this node in the default value for their Label parameter
-    private ArrayList<AbstractProject<?, ?>> jobsWithLabelDefaultValue;
 
     public NodeData(Node n) {
-        jobs = new ArrayList<AbstractProject<?, ?>>();
-        triggeredJobs = new ArrayList<TriggeredJob>();
-        jobsWithLabelDefaultValue = new ArrayList<AbstractProject<?,?>>();
+        super();
         node = n;
-    }
-
-    public void addJob(AbstractProject<?, ?> job) {
-        jobs.add(job);
-    }
-    
-    public void addTriggeredJobs(Collection<TriggeredJob> jobs) {
-        triggeredJobs.addAll(jobs);
-    }
-    
-    public void addJobsWithDefaultValue(Collection<AbstractProject<?, ?>> jobs) {
-        jobsWithLabelDefaultValue.addAll(jobs);
     }
     
     /************************************
@@ -75,32 +50,6 @@ public class NodeData implements Comparable<NodeData> {
     
     public String getNodeURL() {
         return Jenkins.getInstance().getComputer(node.getNodeName()).getUrl();
-    }
-    
-    public int getJobsCount() {
-        return jobs.size();
-    }
-    
-    public int getTriggeredJobsCount() {
-        return triggeredJobs.size();
-    }
-    
-    public List<AbstractProject<?, ?>> getJobs() {
-        return jobs;
-    }
-    
-    public List<TriggeredJob> getTriggeredJobs() {
-        return triggeredJobs;
-    }
-
-    // return the number of jobs that uses this node's LabelAtom
-    // as (part of) their default value for a Label parameter
-    public int getJobsWithLabelDefaultValueCount() {
-        return jobsWithLabelDefaultValue.size();
-    }
-    
-    public List<AbstractProject<?, ?>> getJobsWithLabelDefaultValue() {
-        return jobsWithLabelDefaultValue;
     }
 
     /************************************

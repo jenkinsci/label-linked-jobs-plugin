@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (C) 2014 Dominique Brice
+ * Copyright (C) 2014, 2015 Dominique Brice
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,18 +30,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import jenkins.model.Jenkins;
-import jenkins.plugins.linkedjobs.helpers.TriggeredJobsHelper;
 import jenkins.plugins.linkedjobs.model.JobsGroup;
-import jenkins.plugins.linkedjobs.model.TriggeredJob;
 import jenkins.plugins.linkedjobs.settings.GlobalSettings;
-import hudson.model.AbstractProject;
-import hudson.model.Action;
 import hudson.model.ModelObject;
 import hudson.model.Computer;
 import hudson.model.Label;
 import hudson.model.Node;
-import hudson.model.TopLevelItem;
 import hudson.model.labels.LabelAtom;
 
 /**
@@ -52,7 +46,7 @@ import hudson.model.labels.LabelAtom;
  * @author dominiquebrice
  *
  */
-public class ComputerLinkedJobsAction implements Action {
+public class ComputerLinkedJobsAction extends AbstractLinkedJobsAction {
     
     /**
      * The computer/node associated to this action
@@ -71,24 +65,6 @@ public class ComputerLinkedJobsAction implements Action {
     
     public ModelObject getOwner() {
         return computer;
-    }
-    
-    public String getIconFileName() {
-        return "search.png";
-    }
-
-    // name of the additional link in the left-side menu
-    public String getDisplayName() {
-        return "Linked Jobs";
-    }
-
-    // relative URL used for the additional link in the left-side menu
-    public String getUrlName() {
-        return "linkedjobs";
-    }
-    
-    public boolean getDetailedView() {
-        return GlobalSettings.get().getDetailedView();
     }
     
     public boolean getShowSingleNodeJobs() {
@@ -134,67 +110,18 @@ public class ComputerLinkedJobsAction implements Action {
     // this function finds all jobs that could run on this node,
     // based on labels configuration, and groups them by label
     public List<JobsGroup> getLinkedJobs() {
-        HashMap<Label, JobsGroup> tmpResult = new HashMap<Label, JobsGroup>();
-        Node node = computer.getNode();
-
-        for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
-            if (!(job instanceof TopLevelItem)) {
-                // consider only TopLevelItem - not 100% sure why, though...
-                continue;
-            }
-
-            Label jobLabel = job.getAssignedLabel();
-            if (jobLabel == null) {
-                // jobs with no label are not considered for this function
-                continue;
-            }
-
-            if (jobLabel.matches(node)) {
-                JobsGroup matchingJobGroup = tmpResult.get(jobLabel);
-                if (matchingJobGroup == null) {
-                    matchingJobGroup = new JobsGroup(jobLabel);
-                    tmpResult.put(jobLabel, matchingJobGroup);
-                }
-                matchingJobGroup.addJob(job);
-            }
-        }
-        
-        // then browse list of triggered jobs
-        HashMap<Label, HashMap<AbstractProject<?,?>, TriggeredJob>> triggeredJobsByLabel =
-                new HashMap<Label, HashMap<AbstractProject<?,?>, TriggeredJob>>();
-        TriggeredJobsHelper.populateTriggeredJobs(triggeredJobsByLabel);
-        for (Label label : triggeredJobsByLabel.keySet()) {
-            // can this label run on this node?
-            if (label.matches(node)) {
-                // yes!
-                JobsGroup matchingJobGroup = tmpResult.get(label);
-                if (matchingJobGroup == null) {
-                    matchingJobGroup = new JobsGroup(label);
-                    tmpResult.put(label, matchingJobGroup);
-                }
-                // get the list of all triggered jobs
-                matchingJobGroup.addTriggeredJobs(triggeredJobsByLabel.get(label).values());
-            }
-        }
-        
-        // then browse list of jobs with a Label parameter with a default value
-        HashMap<Label, List<AbstractProject<?,?>>> jobsByDefaultLabel = new HashMap<Label, List<AbstractProject<?,?>>>();
-        TriggeredJobsHelper.populateJobsWithLabelDefaultValue(jobsByDefaultLabel);
-        for (Label label : jobsByDefaultLabel.keySet()) {
-            if (label.matches(node)) {
-                JobsGroup matchJobsGroup = tmpResult.get(label);
-                if (matchJobsGroup == null) {
-                    matchJobsGroup = new JobsGroup(label);
-                    tmpResult.put(label, matchJobsGroup);
-                }
-                matchJobsGroup.addJobsWithDefaultValue(jobsByDefaultLabel.get(label));
-            }
-        }
-
+        return buildJobsGroups();
+    }
+    
+    protected List<JobsGroup> buildResult(HashMap<Label, JobsGroup> tmpResult) {
         ArrayList<JobsGroup> result = new ArrayList<JobsGroup>(tmpResult.size());
         result.addAll(tmpResult.values());
         Collections.sort(result);
-
         return result;
+    }
+    
+    protected boolean isLabelRelevant(Label jobLabel) {
+        // can jobs configured with this label run on this node?
+        return jobLabel != null && jobLabel.matches(computer.getNode());
     }
 }
