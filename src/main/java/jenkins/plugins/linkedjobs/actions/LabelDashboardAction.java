@@ -62,6 +62,7 @@ public class LabelDashboardAction implements RootAction {
     // see getRefresh
     private boolean m_onlyExclusiveNodes;
     private HashMap<Label, HashMap<AbstractProject<?, ?>, TriggeredJob>> m_triggeredJobsByLabel;
+    private HashMap<Label, List<AbstractProject<?,?>>> m_jobsByDefaultLabel;
 
     public String getIconFileName() {
         return "attribute.png";
@@ -98,6 +99,8 @@ public class LabelDashboardAction implements RootAction {
 
         m_triggeredJobsByLabel = new HashMap<Label, HashMap<AbstractProject<?,?>, TriggeredJob>>();
         TriggeredJobsHelper.populateTriggeredJobs(m_triggeredJobsByLabel);
+        m_jobsByDefaultLabel = new HashMap<Label, List<AbstractProject<?,?>>>();
+        TriggeredJobsHelper.populateJobsWithLabelDefaultValue(m_jobsByDefaultLabel);
         
         return true;
     }
@@ -155,6 +158,21 @@ public class LabelDashboardAction implements RootAction {
                     tmpResult.put(labelAtom, new LabelAtomData(labelAtom));
                 }
                 tmpResult.get(labelAtom).addTriggeredJobs(m_triggeredJobsByLabel.get(label).values());
+            }
+        }
+        
+        // then browse list of jobs with default values for a Label parameter
+        for (Label label : m_jobsByDefaultLabel.keySet()) {
+            for (LabelAtom labelAtom : label.listAtoms()) {
+                if (nodesSelfLabels.contains(labelAtom)) {
+                    // skip label that corresponds to a node name
+                    // see getNodesData()
+                    continue;
+                }
+                if (!tmpResult.containsKey(labelAtom)) {
+                    tmpResult.put(labelAtom, new LabelAtomData(labelAtom));
+                }
+                tmpResult.get(labelAtom).addJobsWithDefaultValue(m_jobsByDefaultLabel.get(label));
             }
         }
         
@@ -256,6 +274,17 @@ public class LabelDashboardAction implements RootAction {
             if (isOrphanedLabel(label)) {
                 // all these triggered jobs are in trouble!
                 orphanedJobs.addAll(m_triggeredJobsByLabel.get(label).values());
+            }
+        }
+        return orphanedJobs;
+    }
+    
+    public List<AbstractProject<?, ?>> getOrphanedDefaultValueJobs() {
+        ArrayList<AbstractProject<?, ?>> orphanedJobs = new ArrayList<AbstractProject<?, ?>>();
+        for (Label label : m_jobsByDefaultLabel.keySet()) {
+            if (isOrphanedLabel(label)) {
+                // all these triggered jobs are in trouble!
+                orphanedJobs.addAll(m_jobsByDefaultLabel.get(label));
             }
         }
         return orphanedJobs;
@@ -364,6 +393,17 @@ public class LabelDashboardAction implements RootAction {
             }
         }
 
+        // then scan the list of jobs using default value for their Label parameter
+        for (Label label : m_jobsByDefaultLabel.keySet()) {
+            Node node = isSingleNode(label);
+            if (node != null) {
+                if (!tmpResult.containsKey(node)) {
+                    tmpResult.put(node, new NodeData(node));
+                }
+                tmpResult.get(node).addJobsWithDefaultValue(m_jobsByDefaultLabel.get(label));
+            }
+        }
+
         ArrayList<NodeData> result = new ArrayList<NodeData>(tmpResult.size());
         result.addAll(tmpResult.values());
         // sort list by node names
@@ -409,6 +449,15 @@ public class LabelDashboardAction implements RootAction {
             for (LabelAtom labelAtom : label.listAtoms()) {
                 if (tmpResult.containsKey(labelAtom)) {
                     tmpResult.get(labelAtom).addTriggeredJobs(m_triggeredJobsByLabel.get(label).values());
+                }
+            }
+        }
+        
+        // then browse list of jobs with default values for a Label parameter
+        for (Label label : m_jobsByDefaultLabel.keySet()) {
+            for (LabelAtom labelAtom : label.listAtoms()) {
+                if (tmpResult.containsKey(labelAtom)) {
+                    tmpResult.get(labelAtom).addJobsWithDefaultValue(m_jobsByDefaultLabel.get(label));
                 }
             }
         }

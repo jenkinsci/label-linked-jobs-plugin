@@ -43,11 +43,14 @@ public class LabelAtomData implements Comparable<LabelAtomData> {
     private ArrayList<Node> nodes;
     // list of triggered jobs sharing this label
     private ArrayList<TriggeredJob> triggeredJobs;
+    // list of jobs using this label as a default value for their Label parameter
+    private ArrayList<AbstractProject<?, ?>> jobsWithLabelDefaultValue;
 
     public LabelAtomData(LabelAtom l) {
         labelAtom = l;
         jobs = new ArrayList<AbstractProject<?, ?>>();
         triggeredJobs = new ArrayList<TriggeredJob>();
+        jobsWithLabelDefaultValue = new ArrayList<AbstractProject<?,?>>();
         nodes = new ArrayList<Node>();
     }
 
@@ -57,6 +60,10 @@ public class LabelAtomData implements Comparable<LabelAtomData> {
     
     public void addTriggeredJobs(Collection<TriggeredJob> jobs) {
         triggeredJobs.addAll(jobs);
+    }
+    
+    public void addJobsWithDefaultValue(Collection<AbstractProject<?, ?>> jobs) {
+        jobsWithLabelDefaultValue.addAll(jobs);
     }
 
     public void add(Node n) {
@@ -95,6 +102,12 @@ public class LabelAtomData implements Comparable<LabelAtomData> {
 
     public int getTriggeredJobsCount() {
         return triggeredJobs.size();
+    }
+    
+    // return the number of jobs that uses this LabelAtom
+    // as (part of) their default value for a Label parameter
+    public int getJobsWithLabelDefaultValueCount() {
+        return jobsWithLabelDefaultValue.size();
     }
     
     public int getNodesCount() {

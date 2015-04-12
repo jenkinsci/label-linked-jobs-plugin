@@ -39,10 +39,13 @@ public class NodeData implements Comparable<NodeData> {
     private ArrayList<AbstractProject<?, ?>> jobs;
     // list of triggered jobs functionally tied to this node
     private ArrayList<TriggeredJob> triggeredJobs;
+    // list of jobs using this node in the default value for their Label parameter
+    private ArrayList<AbstractProject<?, ?>> jobsWithLabelDefaultValue;
 
     public NodeData(Node n) {
         jobs = new ArrayList<AbstractProject<?, ?>>();
         triggeredJobs = new ArrayList<TriggeredJob>();
+        jobsWithLabelDefaultValue = new ArrayList<AbstractProject<?,?>>();
         node = n;
     }
 
@@ -52,6 +55,10 @@ public class NodeData implements Comparable<NodeData> {
     
     public void addTriggeredJobs(Collection<TriggeredJob> jobs) {
         triggeredJobs.addAll(jobs);
+    }
+    
+    public void addJobsWithDefaultValue(Collection<AbstractProject<?, ?>> jobs) {
+        jobsWithLabelDefaultValue.addAll(jobs);
     }
     
     /************************************
@@ -84,6 +91,16 @@ public class NodeData implements Comparable<NodeData> {
     
     public List<TriggeredJob> getTriggeredJobs() {
         return triggeredJobs;
+    }
+
+    // return the number of jobs that uses this node's LabelAtom
+    // as (part of) their default value for a Label parameter
+    public int getJobsWithLabelDefaultValueCount() {
+        return jobsWithLabelDefaultValue.size();
+    }
+    
+    public List<AbstractProject<?, ?>> getJobsWithLabelDefaultValue() {
+        return jobsWithLabelDefaultValue;
     }
 
     /************************************

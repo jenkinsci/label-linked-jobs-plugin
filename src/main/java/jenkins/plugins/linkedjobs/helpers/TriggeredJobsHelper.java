@@ -14,6 +14,7 @@ import hudson.plugins.parameterizedtrigger.TriggerBuilder;
 import hudson.tasks.Builder;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -30,6 +31,45 @@ import org.jvnet.jenkins.plugins.nodelabelparameter.parameterizedtrigger.AllNode
 import org.jvnet.jenkins.plugins.nodelabelparameter.parameterizedtrigger.NodeLabelBuildParameter;
 
 public class TriggeredJobsHelper {
+    
+    // list all jobs that are "parameterized", and for which at least one of the
+    // parameter is a Label parameter from the NodeLabelParameter plugin.
+    // group them by label, using the default parameter of their Label parameter
+    public static void populateJobsWithLabelDefaultValue(
+            HashMap<Label, List<AbstractProject<?,?>>> jobsByDefaultLabel) {
+
+        if (Jenkins.getInstance().getPlugin("parameterized-trigger") == null
+         || Jenkins.getInstance().getPlugin("nodelabelparameter") == null) {
+            return; // plugins not active, nothing to do
+        }
+
+        // scan through all jobs defined on this jenkins instance
+        for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+            // scan through the properties of each job
+            for (JobProperty<?> property : job.getProperties().values()) {
+                if (!(property instanceof ParametersDefinitionProperty)) {
+                    continue;
+                }
+
+                // this job is 'parameterized', loop through its parameters list
+                for (ParameterDefinition pdef : ((ParametersDefinitionProperty) property).getParameterDefinitions()) {
+                    if (!(pdef instanceof LabelParameterDefinition)) {
+                        continue;
+                    }
+                    String defaultLabel = ((LabelParameterDefinition) pdef).defaultValue;
+                    if (isSupportedLabel(defaultLabel)) {
+                        Label label = Jenkins.getInstance().getLabel(defaultLabel);
+                        List<AbstractProject<?, ?>> jobsForThisLabel = jobsByDefaultLabel.get(label);
+                        if (jobsForThisLabel == null) {
+                            jobsForThisLabel = new ArrayList<AbstractProject<?,?>>();
+                            jobsByDefaultLabel.put(label, jobsForThisLabel);
+                        }
+                        jobsForThisLabel.add(job);
+                    }
+                }
+            }
+        }
+    }
 
     // list all jobs that are triggered by other jobs, for which configuration makes use of
     // NodeLabel Parameter Plugin and Parameterized Trigger Plugin to override 'on the fly'
@@ -44,17 +84,6 @@ public class TriggeredJobsHelper {
         
         for (AbstractProject<?, ?> triggeringJob : Jenkins.getInstance().getAllItems(
                 AbstractProject.class)) {
-            
-            for (JobProperty<?> property : triggeringJob.getProperties().values()) {
-                if (property instanceof ParametersDefinitionProperty) {
-                    for (ParameterDefinition pdef : ((ParametersDefinitionProperty)property).getParameterDefinitions()) {
-                        if (pdef instanceof LabelParameterDefinition) {
-                            String defaultLabel = ((LabelParameterDefinition)pdef).defaultValue;
-                            // TODO: do something with these default labels?
-                        }
-                    }
-                }
-            }
             
             if (!(triggeringJob instanceof Project)) {
                 continue;
