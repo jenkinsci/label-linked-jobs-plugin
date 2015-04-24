@@ -31,7 +31,7 @@ THE SOFTWARE.
   </parent>
 
   <artifactId>label-linked-jobs</artifactId>
-  <version>4.0.1</version>
+  <version>5.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <name>Label Linked Jobs Plugin</name>
   <description>Gives the list of jobs associated to a given atomic label.</description>
@@ -41,7 +41,7 @@ THE SOFTWARE.
     <connection>scm:git:ssh://github.com/jenkinsci/label-linked-jobs-plugin.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/jenkinsci/label-linked-jobs-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/label-linked-jobs-plugin</url>
-    <tag>label-linked-jobs-4.0.1</tag>
+    <tag>HEAD</tag>
   </scm>
   <licenses>
     <license>
