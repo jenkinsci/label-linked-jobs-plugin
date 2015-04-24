@@ -1,7 +1,7 @@
 <!--
 The MIT License
  
-Copyright (C) 2014 Dominique Brice
+Copyright (C) 2014, 2015 Dominique Brice
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -46,25 +46,47 @@ THE SOFTWARE.
           <br/>
           <j:forEach var="group" items="${groups}">
             <h3>Job<j:if test="${group.hasMoreThanOneJob}">s</j:if> configured with <a href="${rootURL}/${group.labelURL}">${group.label}</a></h3>
+ 
             <div>Matching nodes:
             <j:choose>
               <j:when test="${empty(group.nodes)}">none</j:when>
               <j:otherwise>
-                <j:forEach var="n" items="${group.nodes}">
+                <j:forEach var="n" items="${group.nodes}" varStatus="loopStatus">
                   <j:set var="c" value="${app.getComputer(n.nodeName)}"/>
-                  <a href="${rootURL}/${c.url}">${c.displayName}</a>&#160;
+                  <a href="${rootURL}/${c.url}">${c.displayName}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
                 </j:forEach>
               </j:otherwise>
             </j:choose>
             </div><br/>
-            <j:if test="${it.detailedView}">
-              <t:projectView jobs="${group.jobs}"/>
+
+            <j:if test="${it.detailedView &amp;&amp; !empty(group.jobs)}">
+              <t:projectView jobs="${group.jobs}"/><br/>
             </j:if>
-            <j:if test="${!it.detailedView}">
-              <j:forEach var="job" items="${group.jobs}">
-                <a href="${job.absoluteUrl}">${job.name}</a>&#160;
+            <j:if test="${!it.detailedView &amp;&amp; !empty(group.jobs)}">
+              <j:forEach var="job" items="${group.jobs}" varStatus="loopStatus">
+                <a href="${job.absoluteUrl}">${job.name}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
+              </j:forEach>
+              <br/><br/>
+            </j:if>
+
+            <j:if test="${!empty(group.triggeredJobs)}">
+              Triggered jobs (triggering job(s)):&#160;
+              <j:forEach var="triggeredjob" items="${group.triggeredJobs}" varStatus="outerLoopStatus">
+                <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a>&#160;(<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}" varStatus="innerLoopStatus">
+                  <a href="${triggeringJob.absoluteUrl}">${triggeringJob.name}</a>
+                  <j:if test="${!innerLoopStatus.last}">,&#160;</j:if>
+                </j:forEach>)<j:if test="${!outerLoopStatus.last}">,&#160;</j:if>
+              </j:forEach>
+              <br/><br/>
+            </j:if>
+            
+            <j:if test="${!empty(group.jobsWithLabelDefaultValue)}">
+              Job(s) using this label as default value for a Label parameter:&#160;
+              <j:forEach var="job" items="${group.jobsWithLabelDefaultValue}" varStatus="loopStatus">
+                <a href="${job.absoluteUrl}">${job.name}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
               </j:forEach>
             </j:if>
+            
             <br/><br/>
           </j:forEach>
         </j:otherwise>

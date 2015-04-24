@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (C) 2014 Dominique Brice
+ * Copyright (C) 2014, 2015 Dominique Brice
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,6 @@
 
 package jenkins.plugins.linkedjobs.model;
 
-import hudson.model.AbstractProject;
 import hudson.model.Label;
 import hudson.model.Node;
 
@@ -37,18 +36,17 @@ import jenkins.model.Jenkins;
  * Data structure to group together jobs (projects) sharing the same label
  * @author dominiquebrice
  */
-public class JobsGroup implements Comparable<JobsGroup> {
+public class JobsGroup extends AbstractJobsGroup implements Comparable<JobsGroup> {
 
     // the label shared by all jobs in this group
     private final Label label;
-    // list of jobs sharing this label
-    private ArrayList<AbstractProject<?, ?>> jobs;
     // nodes that could run all jobs listed here considering their label
     private List<Node> applicableNodes;
 
     public JobsGroup(Label l) {
+        super();
+
         label = l;
-        jobs = new ArrayList<AbstractProject<?,?>>();
         
         applicableNodes = new ArrayList<Node>();
         // list all nodes that could run jobs with this particular label
@@ -65,10 +63,6 @@ public class JobsGroup implements Comparable<JobsGroup> {
         }
     }
     
-    public void addJob(AbstractProject<?, ?> job) {
-        jobs.add(job);
-    }
-    
     /************************************
      * functions used to render display in index.jelly
      ************************************/
@@ -81,20 +75,12 @@ public class JobsGroup implements Comparable<JobsGroup> {
         return label.getUrl();
     }
     
-    public List<AbstractProject<?, ?>> getJobs() {
-        return jobs;
-    }
-    
     public List<Node> getNodes() {
         return applicableNodes;
     }
     
     public boolean isSingleNode() {
         return applicableNodes.size() == 1;
-    }
-    
-    public boolean getHasMoreThanOneJob() {
-        return jobs.size() > 1;
     }
 
     /************************************

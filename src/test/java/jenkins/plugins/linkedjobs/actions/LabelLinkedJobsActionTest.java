@@ -40,17 +40,17 @@ public class LabelLinkedJobsActionTest {
     @Test
     public void testIsAssignedLabelLinkedEdgeCases() throws Exception {
         LabelLinkedJobsAction action = new LabelLinkedJobsAction(new LabelAtom("jdk7"));
-        Assert.assertFalse("isAssignedLabelLinked fails when called with null", action.isAssignedLabelLinked(null));
-        Assert.assertFalse("isAssignedLabelLinked is confused when name matches partially", action.isAssignedLabelLinked(new LabelAtom("jdk71")));
-        Assert.assertFalse("isAssignedLabelLinked is confused when name matches partially", action.isAssignedLabelLinked(new LabelAtom("jdk")));
+        Assert.assertFalse("isAssignedLabelLinked fails when called with null", action.isLabelRelevant(null));
+        Assert.assertFalse("isAssignedLabelLinked is confused when name matches partially", action.isLabelRelevant(new LabelAtom("jdk71")));
+        Assert.assertFalse("isAssignedLabelLinked is confused when name matches partially", action.isLabelRelevant(new LabelAtom("jdk")));
     }
     
     @Test
     public void testIsAssignedLabelLinked() throws Exception {
         LabelLinkedJobsAction action = new LabelLinkedJobsAction(new LabelAtom("jdk7"));
-        Assert.assertTrue(action.isAssignedLabelLinked(Label.parseExpression("jdk7")));
-        Assert.assertTrue(action.isAssignedLabelLinked(Label.parseExpression("jdk7&&macos")));
-        Assert.assertTrue(action.isAssignedLabelLinked(Label.parseExpression("macos&&jdk7")));
-        Assert.assertTrue(action.isAssignedLabelLinked(Label.parseExpression("macos&&!jdk7")));
+        Assert.assertTrue(action.isLabelRelevant(Label.parseExpression("jdk7")));
+        Assert.assertTrue(action.isLabelRelevant(Label.parseExpression("jdk7&&macos")));
+        Assert.assertTrue(action.isLabelRelevant(Label.parseExpression("macos&&jdk7")));
+        Assert.assertTrue(action.isLabelRelevant(Label.parseExpression("macos&&!jdk7")));
     }
 }

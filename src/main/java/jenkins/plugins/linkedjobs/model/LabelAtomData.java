@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (C) 2014 Dominique Brice
+ * Copyright (C) 2014, 2015 Dominique Brice
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,46 +26,48 @@ package jenkins.plugins.linkedjobs.model;
 
 import java.util.ArrayList;
 
-import hudson.model.AbstractProject;
+import jenkins.model.Jenkins;
+import jenkins.plugins.linkedjobs.actions.LabelLinkedJobsAction;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
+import hudson.util.VersionNumber;
 
-public class LabelAtomData implements Comparable<LabelAtomData> {
+public class LabelAtomData extends AbstractJobsGroup implements Comparable<LabelAtomData> {
 
-    private final LabelAtom label;
-    // list of jobs sharing this label
-    private ArrayList<AbstractProject<?, ?>> jobs;
+    private final LabelAtom labelAtom;
     // list all nodes defining this label
     private ArrayList<Node> nodes;
 
     public LabelAtomData(LabelAtom l) {
-        label = l;
-        jobs = new ArrayList<AbstractProject<?, ?>>();
+        super();
+        labelAtom = l;
         nodes = new ArrayList<Node>();
-    }
-
-    public void add(AbstractProject<?, ?> job) {
-        jobs.add(job);
     }
 
     public void add(Node n) {
         nodes.add(n);
-    }    
+    }
     
     /************************************
      * functions used to render display in index.jelly
      ************************************/
     
+    public String getDescription() {
+        // configurable description for LabelAtom was implemented in Jenkins core v1.580
+        if (Jenkins.getVersion() != null && !Jenkins.getVersion().isOlderThan(new VersionNumber("1.580"))) {
+            return labelAtom.getDescription() != null && labelAtom.getDescription().trim().length() > 0 ? labelAtom.getDescription() : null;
+        }
+        else {
+            return null;
+        }
+    }
+    
     public String getLabel() {
-        return label.getDisplayName();
+        return labelAtom.getDisplayName();
     }
     
     public String getLabelURL() {
-        return label.getUrl();
-    }
-    
-    public int getJobsCount() {
-        return jobs.size();
+        return labelAtom.getUrl();
     }
     
     public int getNodesCount() {
@@ -73,8 +75,8 @@ public class LabelAtomData implements Comparable<LabelAtomData> {
     }
     
     public boolean getPluginActiveForLabel() {
-        for (hudson.model.Action a : label.getActions()) {
-            if (a instanceof jenkins.plugins.linkedjobs.actions.LabelLinkedJobsAction) {
+        for (hudson.model.Action a : labelAtom.getActions()) {
+            if (a instanceof LabelLinkedJobsAction) {
                 return true;
             }
         }
@@ -86,6 +88,6 @@ public class LabelAtomData implements Comparable<LabelAtomData> {
      ************************************/
     
     public int compareTo(LabelAtomData o) {
-        return this.label.compareTo(o.label);
+        return this.labelAtom.compareTo(o.labelAtom);
     }
 }

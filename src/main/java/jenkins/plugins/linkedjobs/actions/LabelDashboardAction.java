@@ -34,17 +34,21 @@ import java.util.Iterator;
 import java.util.List;
 
 import jenkins.model.Jenkins;
+import jenkins.plugins.linkedjobs.helpers.TriggeredJobsHelper;
+import jenkins.plugins.linkedjobs.model.JobsGroup;
 import jenkins.plugins.linkedjobs.model.LabelAtomData;
 import jenkins.plugins.linkedjobs.model.NodeData;
+import jenkins.plugins.linkedjobs.model.TriggeredJob;
 import jenkins.plugins.linkedjobs.settings.GlobalSettings;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Label;
 import hudson.model.Node;
-import hudson.model.Node.Mode;
+import hudson.model.Project;
 import hudson.model.labels.LabelAtom;
 import hudson.model.RootAction;
 import hudson.model.TopLevelItem;
+import hudson.tasks.Builder;
 
 /**
  * Action (and ExtensionPoint!) responsible for the display of the Labels Dashboard plugin page.
@@ -53,6 +57,11 @@ import hudson.model.TopLevelItem;
  */
 @Extension
 public class LabelDashboardAction implements RootAction {
+    
+    // see getRefresh
+    private boolean m_onlyExclusiveNodes;
+    private HashMap<Label, HashMap<AbstractProject<?, ?>, TriggeredJob>> m_triggeredJobsByLabel;
+    private HashMap<Label, List<AbstractProject<?,?>>> m_jobsByDefaultLabel;
 
     public String getIconFileName() {
         return "attribute.png";
@@ -76,6 +85,23 @@ public class LabelDashboardAction implements RootAction {
     
     public boolean getShowLabellessJobs() {
         return GlobalSettings.get().getShowLabellessJobs();
+    }
+    
+    // while the display of LabelDashboardAction.index.jelly is calculated, we will
+    // need several time to have the list of triggered jobs, organized by their triggering label.
+    // to avoid doing it several times, a 'fake' initialize function is called at the beginning of
+    // index.jelly. Its result is not directly used, but it allows to 'refresh' the value
+    // of several LabelDashboardAction instance variables, used in other get* functions below
+    public boolean getRefresh() {
+        
+        m_onlyExclusiveNodes = getOnlyExclusiveNodes();
+
+        m_triggeredJobsByLabel = new HashMap<Label, HashMap<AbstractProject<?,?>, TriggeredJob>>();
+        TriggeredJobsHelper.populateTriggeredJobs(m_triggeredJobsByLabel);
+        m_jobsByDefaultLabel = new HashMap<Label, List<AbstractProject<?,?>>>();
+        TriggeredJobsHelper.populateJobsWithLabelDefaultValue(m_jobsByDefaultLabel);
+        
+        return true;
     }
     
     /**
@@ -106,16 +132,46 @@ public class LabelDashboardAction implements RootAction {
                 continue;
             }
 
-            for (LabelAtom label : job.getAssignedLabel().listAtoms()) {
-                if (nodesSelfLabels.contains(label)) {
+            for (LabelAtom labelAtom : job.getAssignedLabel().listAtoms()) {
+                if (nodesSelfLabels.contains(labelAtom)) {
                     // skip label that corresponds to a node name
                     // see getNodesData()
                     continue;
                 }
-                if (!tmpResult.containsKey(label)) {
-                    tmpResult.put(label, new LabelAtomData(label));
+                if (!tmpResult.containsKey(labelAtom)) {
+                    tmpResult.put(labelAtom, new LabelAtomData(labelAtom));
                 }
-                tmpResult.get(label).add(job);
+                tmpResult.get(labelAtom).addJob(job);
+            }
+        }
+        
+        // then browse list of triggered jobs
+        for (Label label : m_triggeredJobsByLabel.keySet()) {
+            for (LabelAtom labelAtom : label.listAtoms()) {
+                if (nodesSelfLabels.contains(labelAtom)) {
+                    // skip label that corresponds to a node name
+                    // see getNodesData()
+                    continue;
+                }
+                if (!tmpResult.containsKey(labelAtom)) {
+                    tmpResult.put(labelAtom, new LabelAtomData(labelAtom));
+                }
+                tmpResult.get(labelAtom).addTriggeredJobs(m_triggeredJobsByLabel.get(label).values());
+            }
+        }
+        
+        // then browse list of jobs with default values for a Label parameter
+        for (Label label : m_jobsByDefaultLabel.keySet()) {
+            for (LabelAtom labelAtom : label.listAtoms()) {
+                if (nodesSelfLabels.contains(labelAtom)) {
+                    // skip label that corresponds to a node name
+                    // see getNodesData()
+                    continue;
+                }
+                if (!tmpResult.containsKey(labelAtom)) {
+                    tmpResult.put(labelAtom, new LabelAtomData(labelAtom));
+                }
+                tmpResult.get(labelAtom).addJobsWithDefaultValue(m_jobsByDefaultLabel.get(label));
             }
         }
         
@@ -140,14 +196,14 @@ public class LabelDashboardAction implements RootAction {
      * If there is no such node, jobs without labels can't be run at all
      * @return true only if all nodes are set to Mode.EXCLUSIVE
      */
-    public boolean getOnlyExclusiveNodes() {
+    public static boolean getOnlyExclusiveNodes() {
         Jenkins jenkins = Jenkins.getInstance();
-        if (!Mode.EXCLUSIVE.equals(jenkins.getMode())) {
+        if (!Node.Mode.EXCLUSIVE.equals(jenkins.getMode())) {
             return false;
         }
         Iterator<Node> i = jenkins.getNodes().iterator();
         while (i.hasNext()) {
-            if (!Mode.EXCLUSIVE.equals(i.next().getMode())) {
+            if (!Node.Mode.EXCLUSIVE.equals(i.next().getMode())) {
                 return false;
             }
         }
@@ -156,7 +212,7 @@ public class LabelDashboardAction implements RootAction {
     
     // JENKINS-25163 - Add list of jobs that do not have a label
     // this function returns all jobs that have no associated label(s)
-    public ArrayList<AbstractProject<?, ?>> getJobsWithNoLabels() {
+    public List<AbstractProject<?, ?>> getJobsWithNoLabels() {
         ArrayList<AbstractProject<?, ?>> noLabelsJobs = new ArrayList<AbstractProject<?, ?>>();
         for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
             if (!(job instanceof TopLevelItem)) {
@@ -177,41 +233,73 @@ public class LabelDashboardAction implements RootAction {
         return noLabelsJobs;
     }
     
+    /**
+     * @param label the label to test
+     * @return true if no node can accept this label. This means that if a job has this label
+     * it will remain stuck in the queue as no node can run it
+     */
+    private boolean isOrphanedLabel(Label label) {
+        if (label == null) {
+            // if job.getAssignedLabel is null then the job can run
+            // anywhere, so we're fine...
+            if (m_onlyExclusiveNodes) {
+                // ... except if all nodes are in exclusive mode!
+                // JENKINS-25188 - Orphaned jobs do not show jobs without label when all nodes set to Label restrictions
+                return true;
+            }
+            return false;
+        }
+        Jenkins jenkins = Jenkins.getInstance();
+        if (label.matches(jenkins)) {
+            // this job can run on the master, skip it
+            return false;
+        }
+
+        for (Node node : jenkins.getNodes()) {
+            if (label.matches(node)) {
+                // this label can run on this node... label is not orphaned!
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    // this function finds all triggered jobs that can't run on any nodes
+    // because their triggering jobs trigger them with a label that is compatible
+    // with no nodes - JENKINS-27588
+    public List<TriggeredJob> getOrphanedTriggeredJobs() {
+        ArrayList<TriggeredJob> orphanedJobs = new ArrayList<TriggeredJob>();
+        for (Label label : m_triggeredJobsByLabel.keySet()) {
+            if (isOrphanedLabel(label)) {
+                // all these triggered jobs are in trouble!
+                orphanedJobs.addAll(m_triggeredJobsByLabel.get(label).values());
+            }
+        }
+        return orphanedJobs;
+    }
+    
+    public List<AbstractProject<?, ?>> getOrphanedDefaultValueJobs() {
+        ArrayList<AbstractProject<?, ?>> orphanedJobs = new ArrayList<AbstractProject<?, ?>>();
+        for (Label label : m_jobsByDefaultLabel.keySet()) {
+            if (isOrphanedLabel(label)) {
+                // all these triggered jobs are in trouble!
+                orphanedJobs.addAll(m_jobsByDefaultLabel.get(label));
+            }
+        }
+        return orphanedJobs;
+    }
+    
     // this function finds all jobs that can't run on any nodes
     // because of labels (mis-)configuration
-    public ArrayList<AbstractProject<?, ?>> getOrphanedJobs() {
-        boolean bOnlyExclusiveNodes = getOnlyExclusiveNodes();
-
+    public List<AbstractProject<?, ?>> getOrphanedJobs() {
         ArrayList<AbstractProject<?, ?>> orphanedJobs = new ArrayList<AbstractProject<?, ?>>();
         for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
             if (!(job instanceof TopLevelItem)) {
                 // consider only TopLevelItem - not 100% sure why, though...
                 continue;
             }
-            Label jobLabel = job.getAssignedLabel();
-            if (jobLabel == null) {
-                // if job.getAssignedLabel is null then the job can run
-                // anywhere, so we're fine...
-                if (bOnlyExclusiveNodes) {
-                    // ... except if all nodes are in exclusive mode!
-                    // JENKINS-25188 - Orphaned jobs do not show jobs without label when all nodes set to Label restrictions
-                    orphanedJobs.add(job);
-                }
-                continue;
-            }
-            Jenkins jenkins = Jenkins.getInstance();
-            if (jobLabel.matches(jenkins)) {
-                // this job can run on the master, skip it
-                continue;
-            }
-            boolean hasMatchingNode = false;
-            Iterator<Node> i = jenkins.getNodes().iterator();
-            while (i.hasNext() && !hasMatchingNode) {
-                if (jobLabel.matches(i.next())) {
-                    hasMatchingNode = true;
-                }
-            }
-            if (!hasMatchingNode) {
+
+            if (isOrphanedLabel(job.getAssignedLabel())) {
                 orphanedJobs.add(job);
             }
         }
@@ -224,10 +312,43 @@ public class LabelDashboardAction implements RootAction {
         return orphanedJobs;
     }
     
+    /**
+     * @param label
+     * @return a non-null Node if this and only this node can run jobs configured with label
+     */
+    private Node isSingleNode(Label label) {
+        Node node = null;
+        Jenkins jenkins = Jenkins.getInstance();
+        if (label.matches(jenkins)) {
+            node  = jenkins;
+        }
+
+        Iterator<Node> i = jenkins.getNodes().iterator();
+        while (i.hasNext()) {
+            Node iNode = i.next();
+            if (label.matches(iNode)) {
+                if (node == null) {
+                    // that's the first node this job can run on
+                    // let's continue the loop
+                    node = iNode;
+                }
+                else {
+                    // this job can already run on one node
+                    // that's the second node, so we won't keep
+                    // track of it. Indicate it by setting node to null
+                    node = null;
+                    // and get out of the loop
+                    break;
+                }
+            }
+        }
+        return node;
+    }
+    
     // this function finds all jobs that can run on only one node
     // because of labels (mis-)configuration, thus with a non-redundancy
     // issue
-    public ArrayList<NodeData> getSingleNodeJobs() {
+    public List<NodeData> getSingleNodeJobs() {
         HashMap<Node, NodeData> tmpResult = new HashMap<Node, NodeData>();
 
         for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
@@ -236,6 +357,11 @@ public class LabelDashboardAction implements RootAction {
                 continue;
             }
 
+            // switch to a loop on job.getRelevantLabels() ?
+            // that would make it applicable for hudson.matrix.MatrixProject.
+            // On the other hand, maybe we could ignore MatrixProject and
+            // try to process hudson.matrix.MatrixConfiguration, which are NOT TopLevelItem
+            // but are apparently part of the getAllItems loop
             Label jobLabel = job.getAssignedLabel();
             if (jobLabel == null) {
                 // if job.getAssignedLabel is null then the job can run
@@ -244,32 +370,7 @@ public class LabelDashboardAction implements RootAction {
                 continue;
             }
 
-            Node node = null;
-            Jenkins jenkins = Jenkins.getInstance();
-            if (jobLabel.matches(jenkins)) {
-                node  = jenkins;
-            }
-
-            Iterator<Node> i = jenkins.getNodes().iterator();
-            while (i.hasNext()) {
-                Node iNode = i.next();
-                if (jobLabel.matches(iNode)) {
-                    if (node == null) {
-                        // that's the first node this job can run on
-                        // let's continue the loop
-                        node = iNode;
-                    }
-                    else {
-                        // this job can already run on one node
-                        // that's the second node, so we won't keep
-                        // track of it. Indicate it by setting node to null
-                        node = null;
-                        // and get out of the loop
-                        break;
-                    }
-                }
-            }
-            
+            Node node = isSingleNode(jobLabel);
             // that fact that the job can run on a single-node
             // is indicated by node being not null
             if (node != null) {
@@ -277,6 +378,28 @@ public class LabelDashboardAction implements RootAction {
                     tmpResult.put(node, new NodeData(node));
                 }
                 tmpResult.get(node).addJob(job);
+            }
+        }
+        
+        // then scan the list of triggered jobs
+        for (Label label : m_triggeredJobsByLabel.keySet()) {
+            Node node = isSingleNode(label);
+            if (node != null) {
+                if (!tmpResult.containsKey(node)) {
+                    tmpResult.put(node, new NodeData(node));
+                }
+                tmpResult.get(node).addTriggeredJobs(m_triggeredJobsByLabel.get(label).values());
+            }
+        }
+
+        // then scan the list of jobs using default value for their Label parameter
+        for (Label label : m_jobsByDefaultLabel.keySet()) {
+            Node node = isSingleNode(label);
+            if (node != null) {
+                if (!tmpResult.containsKey(node)) {
+                    tmpResult.put(node, new NodeData(node));
+                }
+                tmpResult.get(node).addJobsWithDefaultValue(m_jobsByDefaultLabel.get(label));
             }
         }
 
@@ -312,10 +435,28 @@ public class LabelDashboardAction implements RootAction {
                 continue;
             }
             
-            for (LabelAtom label : job.getAssignedLabel().listAtoms()) {
-                if (tmpResult.containsKey(label)) {
+            for (LabelAtom labelAtom : job.getAssignedLabel().listAtoms()) {
+                if (tmpResult.containsKey(labelAtom)) {
                     // ok, this corresponds to a node's self label. Let's use it
-                    tmpResult.get(label).addJob(job);
+                    tmpResult.get(labelAtom).addJob(job);
+                }
+            }
+        }
+        
+        // then scan the list of triggered jobs
+        for (Label label : m_triggeredJobsByLabel.keySet()) {
+            for (LabelAtom labelAtom : label.listAtoms()) {
+                if (tmpResult.containsKey(labelAtom)) {
+                    tmpResult.get(labelAtom).addTriggeredJobs(m_triggeredJobsByLabel.get(label).values());
+                }
+            }
+        }
+        
+        // then browse list of jobs with default values for a Label parameter
+        for (Label label : m_jobsByDefaultLabel.keySet()) {
+            for (LabelAtom labelAtom : label.listAtoms()) {
+                if (tmpResult.containsKey(labelAtom)) {
+                    tmpResult.get(labelAtom).addJobsWithDefaultValue(m_jobsByDefaultLabel.get(label));
                 }
             }
         }

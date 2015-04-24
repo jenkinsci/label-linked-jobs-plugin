@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (C) 2014 Dominique Brice
+ * Copyright (C) 2014, 2015 Dominique Brice
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,17 @@
 
 package jenkins.plugins.linkedjobs.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import jenkins.model.Jenkins;
-import hudson.model.AbstractProject;
 import hudson.model.Node;
 
-public class NodeData implements Comparable<NodeData> {
+public class NodeData extends AbstractJobsGroup implements Comparable<NodeData> {
 
     private Node node;
-    // list of jobs using this node directly (by label)
-    private ArrayList<AbstractProject<?, ?>> jobs;
 
     public NodeData(Node n) {
-        jobs = new ArrayList<AbstractProject<?, ?>>();
+        super();
         node = n;
     }
-
-    public void addJob(AbstractProject<?, ?> job) {
-        jobs.add(job);
-    }    
     
     /************************************
      * functions used to render display in index.jelly
@@ -60,14 +50,6 @@ public class NodeData implements Comparable<NodeData> {
     
     public String getNodeURL() {
         return Jenkins.getInstance().getComputer(node.getNodeName()).getUrl();
-    }
-    
-    public int getJobsCount() {
-        return jobs.size();
-    }
-    
-    public List<AbstractProject<?, ?>> getJobs() {
-        return jobs;
     }
 
     /************************************
