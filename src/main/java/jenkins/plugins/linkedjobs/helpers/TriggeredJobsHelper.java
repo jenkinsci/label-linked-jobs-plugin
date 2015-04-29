@@ -197,13 +197,34 @@ public class TriggeredJobsHelper {
         }
     }
     
-    private static boolean isSupportedLabel(String strLabel) {
+    static boolean isSupportedLabel(String strLabel) {
+        if (strLabel == null) { 
+            return false;
+        }
         // if label contains a macro, ignore it altogether. It could be complicated, or even impossible
         // to expand the macro without being in the context of a build
         // see JENKINS-27588
+        
+        // first look for the ${...} syntax
         int start = strLabel.indexOf("${");
         int end = strLabel.indexOf("}");
-        return !(0 <= start && start <= end);
+        if (0 <= start && start <= end) {
+            return false;
+        }
+        
+        // then test also the $TOKEN syntax
+        int index = strLabel.indexOf('$');
+        if (index >= 0) {
+            if (index + 1 < strLabel.length()) {
+                Character nextChar = strLabel.charAt(index + 1);
+                if (('a' <= nextChar && nextChar <= 'z')
+                 || ('A' <= nextChar && nextChar <= 'Z')
+                 || nextChar == '_') {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
     
     private static void addTriggeredJobsByLabel(HashMap<Label, HashMap<AbstractProject<?,?>, TriggeredJob>> triggeredJobsByLabel,
