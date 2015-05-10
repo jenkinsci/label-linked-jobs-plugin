@@ -1,7 +1,7 @@
 <!--
 The MIT License
  
-Copyright (C) 2014, 2015 Dominique Brice
+Copyright (C) 2015 Dominique Brice
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,27 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  This Jelly script is used to produce the global configuration option.
--->
-  
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:section title="Linked Jobs Plugin Configuration">
-    <f:entry title="Linked Jobs - Detailed projects list" field="detailedView"
-      description="Uncheck if you want to see a condensed list of the projects on the Linked Jobs pages">
-      <f:checkbox />
-    </f:entry>
-    <f:entry title="Labels Dashboard - Detailed projects list" field="dashboardOrphanedJobsDetailedView"
-      description="Uncheck if you want to see condensed lists of jobs on the Labels Dashboard">
-      <f:checkbox />
-    </f:entry>
-    <f:entry title="Labels Dashboard - Label-less jobs" field="showLabellessJobs"
-      description="Check if you want to activate the tab showing jobs with no labels in the Labels Dashboard">
-      <f:checkbox />
-    </f:entry>
-    <f:entry title="List single-node/exclusive jobs" field="showSingleNodeJobs"
-      description="Check if you want to see the jobs that can run on only one node (Labels Dashboard, Linked Jobs for nodes)">
-      <f:checkbox />
-    </f:entry>
-  </f:section>
+  <l:tabBar>
+    <l:tab name="Labels" active="${page=='labels'}" href="." />
+    <l:tab name="Nodes" active="${page=='nodes'}" href="./nodes" />
+    <l:tab name="Orphaned Jobs" active="${page=='orphaned'}" href="./orphaned" />
+    <j:if test="${it.showSingleNodeJobs}"> 
+      <l:tab name="Single-node Jobs" active="${page=='singlenode'}" href="./singlenode" />
+    </j:if>
+    <j:if test="${it.showLabellessJobs}">
+      <l:tab name="Label-less Jobs" active="${page=='labelless'}" href="./labelless" />
+    </j:if>
+  </l:tabBar>
 </j:jelly>

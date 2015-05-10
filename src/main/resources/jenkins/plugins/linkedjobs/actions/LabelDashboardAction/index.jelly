@@ -22,8 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <!--
-  This script corresponds to the "Linked Jobs" page, accessible via a new link
-  in the left-hand side menu for labels
+  This script corresponds to the "Labels" tab on the Dashboard page
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
@@ -33,8 +32,8 @@ THE SOFTWARE.
     <st:include it="${app}" page="sidepanel.jelly"/>
 
     <l:main-panel>
-    
-      <h2>Labels</h2>
+      <local:dashboard_tabbar page="labels" xmlns:local="/jenkins/plugins/linkedjobs/actions/LabelDashboardAction" />
+
       <j:set var="unused" value="${it.refresh}" />
       <j:set var="labels" value="${it.labelsData}" />
       <j:forEach var="label" items="${labels}">
@@ -55,129 +54,10 @@ THE SOFTWARE.
           <j:if test="${triggeredJobCount > 0}">This label is used by ${triggeredJobCount} triggered job configuration<j:if test="${triggeredJobCount > 1}">s</j:if>.<br/></j:if>
           <j:if test="${jobsWithLabelDefaultValueCount == 1}">This label is used by 1 job as a default value for its Label parameter.<br/></j:if>
           <j:if test="${jobsWithLabelDefaultValueCount > 1}">This label is used by ${jobsWithLabelDefaultValueCount} jobs as a default value for their Label parameter.<br/></j:if>
-          This label is defined by ${nodeCount} node<j:if test="${nodeCount > 1}">s</j:if>.
+            This label is defined by ${nodeCount} node<j:if test="${nodeCount > 1}">s</j:if>.
           <j:if test="${nodeCount == 0}"><b><font color="red">You should verify your configuration.</font></b></j:if>
         </div>
       </j:forEach>
-      <br/><br/>
-
-      <j:set var="allExclusive" value="${it.onlyExclusiveNodes}" />
-      <h2>Nodes</h2>
-      <j:if test="${allExclusive}">
-        Note: all nodes are in exclusive mode.
-      </j:if>
-      <j:set var="nodes" value="${it.nodesData}" />
-      <j:forEach var="node" items="${nodes}">
-        <div>
-          <j:set var="jobCount" value="${node.jobsCount}" />
-          <j:set var="triggeredJobCount" value="${node.triggeredJobsCount}" />
-          <j:set var="jobsWithLabelDefaultValueCount" value="${node.jobsWithLabelDefaultValueCount}" />
-          <h4><a href="${rootURL}/${node.nodeURL}">${node.name}</a></h4>
-          This node's <a href="${rootURL}/${node.labelURL}">label</a> is used by ${jobCount} job<j:if test="${jobCount > 1}">s</j:if>.
-          <j:if test="${triggeredJobCount > 0}"><br/>This node's label is used by ${triggeredJobCount} triggered job<j:if test="${triggeredJobCount > 1}">s</j:if>.</j:if>
-          <j:if test="${jobsWithLabelDefaultValueCount == 1}"><br/>This node's label is used by 1 job as a default value for its Label parameter.<br/></j:if>
-          <j:if test="${jobsWithLabelDefaultValueCount > 1}"><br/>This node's label is used by ${jobsWithLabelDefaultValueCount} jobs as a default value for their Label parameter.<br/></j:if>
-        </div>
-      </j:forEach>
-      <br/><br/>
-
-      <j:set var="orphanedJobs" value="${it.orphanedJobs}" />
-      <j:set var="orphanedTriggeredJobs" value="${it.orphanedTriggeredJobs}" />
-      <j:set var="orphanedDefaultValueJobs" value="${it.orphanedDefaultValueJobs}" />
-      <h2>Orphaned Jobs</h2>
-      <j:choose>
-        <j:when test="${empty(orphanedJobs) &amp;&amp; empty(orphanedTriggeredJobs) &amp;&amp; empty(orphanedDefaultValueJobs)}">There are no orphaned jobs. Well done with your configuration!</j:when>
-        <j:otherwise>
-
-          <j:if test="${!empty(orphanedJobs)}">
-            The following job(s) cannot run on any node because of label (mis-)configuration. Get to it!<br/><br/>
-            <j:if test="${it.dashboardOrphanedJobsDetailedView}">
-              <t:projectView jobs="${orphanedJobs}"/>
-            </j:if>
-            <j:if test="${!it.dashboardOrphanedJobsDetailedView}">
-              <j:forEach var="job" items="${orphanedJobs}" varStatus="loopStatus">
-                <a href="${job.absoluteUrl}">${job.name}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
-              </j:forEach>
-            </j:if>
-          </j:if>
-
-          <j:if test="${!empty(orphanedTriggeredJobs)}">
-            <br/><br/>Orphaned triggered jobs (triggering job(s)):&#160;
-            <j:forEach var="triggeredjob" items="${orphanedTriggeredJobs}" varStatus="outerLoopStatus">
-              <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a>&#160;(<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}" varStatus="innerLoopStatus">
-                  <a href="${triggeringJob.absoluteUrl}">${triggeringJob.name}</a>
-                  <j:if test="${!innerLoopStatus.last}">,&#160;</j:if>
-                </j:forEach>)<j:if test="${!outerLoopStatus.last}">,&#160;</j:if>
-            </j:forEach>
-          </j:if>
-
-          <j:if test="${!empty(orphanedDefaultValueJobs)}">
-            <br/><br/>Orphaned jobs, considering their default Label parameter value:&#160;
-            <j:forEach var="job" items="${orphanedDefaultValueJobs}" varStatus="loopStatus">
-              <a href="${job.absoluteUrl}">${job.name}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
-            </j:forEach>
-          </j:if>
-        </j:otherwise>
-      </j:choose>
-      <br/><br/>
-      
-      <j:if test="${it.showSingleNodeJobs}">  
-        <j:set var="singleNodeJobsByNode" value="${it.singleNodeJobs}" />
-        <h2>Single-node Jobs</h2>
-        <j:choose>
-          <j:when test="${empty(singleNodeJobsByNode)}">There are no single-node jobs. Well done with your configuration!</j:when>
-          <j:otherwise>
-            The following job(s) can run on only one node because of label (mis-)configuration, so you may have trouble if their dedicated node goes down.<br/><br/>
-            <j:forEach var="node" items="${singleNodeJobsByNode}">
-              <div>
-                <h4><a href="${rootURL}/${node.nodeURL}">${node.name}</a></h4>
-                
-                <j:if test="${it.dashboardOrphanedJobsDetailedView}">
-                  <t:projectView jobs="${node.jobs}"/>
-                </j:if>
-                <j:if test="${!it.dashboardOrphanedJobsDetailedView}">
-                  <j:forEach var="job" items="${node.jobs}" varStatus="loopStatus">
-                    <a href="${job.absoluteUrl}">${job.name}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
-                  </j:forEach>
-                </j:if>
-                
-                <j:forEach var="triggeredjob" items="${node.triggeredJobs}" varStatus="outerLoopStatus">
-                  <j:if test="${outerLoopStatus.first}"><br/><br/>Triggered jobs (triggering job(s)):&#160;</j:if>
-                  <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a>&#160;(<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}" varStatus="innerLoopStatus">
-                    <a href="${triggeringJob.absoluteUrl}">${triggeringJob.name}</a>
-                    <j:if test="${!innerLoopStatus.last}">,&#160;</j:if>
-                  </j:forEach>)<j:if test="${!outerLoopStatus.last}">,&#160;</j:if>
-                </j:forEach>
-                
-                <j:forEach var="job" items="${node.jobsWithLabelDefaultValue}" varStatus="loopStatus">
-                  <j:if test="${loopStatus.first}"><br/><br/>By default value:&#160;</j:if>
-                  <a href="${job.absoluteUrl}">${job.name}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
-                </j:forEach>
-              </div><br/>
-            </j:forEach>
-          </j:otherwise>
-        </j:choose>
-      </j:if>
-      <br/><br/>
-
-      <j:if test="${it.showLabellessJobs}">  
-        <j:set var="labellessJobs" value="${it.jobsWithNoLabels}" />
-        <h2>Label-less jobs</h2>
-        <j:choose>
-          <j:when test="${empty(labellessJobs)}">There are no jobs with no defined label.</j:when>
-          <j:otherwise>
-            The following job(s) have no assigned labels.<br/><br/>
-            <j:if test="${it.dashboardOrphanedJobsDetailedView}">
-              <t:projectView jobs="${labellessJobs}"/>
-            </j:if>
-            <j:if test="${!it.dashboardOrphanedJobsDetailedView}">
-              <j:forEach var="job" items="${labellessJobs}" varStatus="loopStatus">
-                <a href="${job.absoluteUrl}">${job.name}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
-              </j:forEach>
-            </j:if>
-          </j:otherwise>
-        </j:choose>
-      </j:if>
 
     </l:main-panel>
 
