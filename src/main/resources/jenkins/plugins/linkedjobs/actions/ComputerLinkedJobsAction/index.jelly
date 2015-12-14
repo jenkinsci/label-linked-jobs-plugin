@@ -57,7 +57,7 @@ THE SOFTWARE.
         <j:otherwise>
 
           <j:forEach var="group" items="${groups}">
-            <h3>Job<j:if test="${group.hasMoreThanOneJob}">s</j:if> configured with <a href="${rootURL}/${group.labelURL}">${group.label}</a></h3>
+            <h3>Job<j:if test="${group.hasMoreThanOneJob}">s</j:if> configured with <a href="${rootURL}/${group.labelURL}">${group.label}</a><t:summary href="http://www.yahoo.com" icon="search.png"/></h3>
             
             <j:if test="${it.detailedView  &amp;&amp; !empty(group.jobs)}">
               <t:projectView jobs="${group.jobs}"/>
