@@ -117,7 +117,7 @@ public class TriggeredJobsHelper {
                                 for (Iterator<Object> ite = keysSet.iterator(); ite.hasNext() ;) {
                                     String key = (String)ite.next();
                                     if (!isSupportedLabel(p.getProperty(key))) {
-                                        p.remove(key);
+                                        ite.remove();
                                     }
                                 }
                                 addTriggeredJobsByPredefinedParameters(triggeredJobsByLabel, p, triggeredJobs, triggeringJob);
