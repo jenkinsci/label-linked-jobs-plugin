@@ -4,3 +4,4 @@ work/
 .project
 .settings/
 .DS_Store
+/target
