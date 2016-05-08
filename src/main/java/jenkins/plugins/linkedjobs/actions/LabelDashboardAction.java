@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import jenkins.model.Jenkins;
 import jenkins.plugins.linkedjobs.helpers.TriggeredJobsHelper;
@@ -48,6 +49,7 @@ import hudson.model.Project;
 import hudson.model.labels.LabelAtom;
 import hudson.model.RootAction;
 import hudson.model.TopLevelItem;
+import hudson.slaves.Cloud;
 import hudson.tasks.Builder;
 
 /**
@@ -102,6 +104,12 @@ public class LabelDashboardAction implements RootAction {
         TriggeredJobsHelper.populateJobsWithLabelDefaultValue(m_jobsByDefaultLabel);
         
         return true;
+    }
+    
+    // boolean indicator used on the dashboard page to determine whether
+    // clouds information should be displayed at all
+    public boolean getHasAtLeastOneCloud() {
+        return Jenkins.getInstance().clouds.size() > 0;
     }
     
     /**
@@ -261,12 +269,19 @@ public class LabelDashboardAction implements RootAction {
                 return false;
             }
         }
+        
+        // JENKINS-32445, also look for clouds that could support this label
+        for (Cloud c : Jenkins.getInstance().clouds) {
+            if (c.canProvision(label)) {
+                return false;
+            }
+        }
         return true;
     }
     
     // this function finds all triggered jobs that can't run on any nodes
     // because their triggering jobs trigger them with a label that is compatible
-    // with no nodes - JENKINS-27588
+    // with no nodes - JENKINS-27588 - nor clouds - JENKINS-32445
     public List<TriggeredJob> getOrphanedTriggeredJobs() {
         ArrayList<TriggeredJob> orphanedJobs = new ArrayList<TriggeredJob>();
         for (Label label : m_triggeredJobsByLabel.keySet()) {
@@ -278,8 +293,8 @@ public class LabelDashboardAction implements RootAction {
         return orphanedJobs;
     }
     
-    public List<AbstractProject<?, ?>> getOrphanedDefaultValueJobs() {
-        ArrayList<AbstractProject<?, ?>> orphanedJobs = new ArrayList<AbstractProject<?, ?>>();
+    public Set<AbstractProject<?, ?>> getOrphanedDefaultValueJobs() {
+        HashSet<AbstractProject<?, ?>> orphanedJobs = new HashSet<AbstractProject<?,?>>();
         for (Label label : m_jobsByDefaultLabel.keySet()) {
             if (isOrphanedLabel(label)) {
                 // all these triggered jobs are in trouble!

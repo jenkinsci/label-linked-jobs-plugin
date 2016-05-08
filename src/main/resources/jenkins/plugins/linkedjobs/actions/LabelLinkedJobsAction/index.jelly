@@ -44,6 +44,17 @@ THE SOFTWARE.
         <j:otherwise>
           <h2>Label "${it.label}" is used by the following job(s)</h2>
           <br/>
+
+          <j:set var="clouds" value="${it.provisioningClouds}" />
+          <j:if test="${it.getSize(clouds) > 0}">
+          <div>
+            Provisioning cloud<j:if test="${it.getSize(clouds) > 1}">s</j:if>:
+            <j:forEach var="cloud" items="${clouds}" varStatus="loopStatus">
+              ${cloud.displayName}<j:if test="${!loopStatus.last}">,&#160;</j:if>
+            </j:forEach>
+          </div><br/>
+          </j:if>
+          
           <j:forEach var="group" items="${groups}">
             <h3>Job<j:if test="${group.hasMoreThanOneJob}">s</j:if> configured with <a href="${rootURL}/${group.labelURL}">${group.label}</a></h3>
  
@@ -58,6 +69,16 @@ THE SOFTWARE.
               </j:otherwise>
             </j:choose>
             </div><br/>
+            
+            <j:set var="jobs_clouds" value="${group.provisioningClouds}" />
+            <j:if test="${it.getSize(jobs_clouds) > 0}">
+            <div>
+              Provisioning cloud<j:if test="${it.getSize(jobs_clouds) > 1}">s</j:if>:
+              <j:forEach var="job_cloud" items="${jobs_clouds}" varStatus="loopStatus">
+                ${job_cloud.displayName}<j:if test="${!loopStatus.last}">,&#160;</j:if>
+              </j:forEach>
+            </div><br/>
+            </j:if>
 
             <j:if test="${it.detailedView &amp;&amp; !empty(group.jobs)}">
               <t:projectView jobs="${group.jobs}"/><br/>
@@ -85,6 +106,7 @@ THE SOFTWARE.
               <j:forEach var="job" items="${group.jobsWithLabelDefaultValue}" varStatus="loopStatus">
                 <a href="${job.absoluteUrl}">${job.name}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
               </j:forEach>
+              <br/><br/>
             </j:if>
             
             <br/><br/>

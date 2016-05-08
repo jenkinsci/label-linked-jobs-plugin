@@ -31,7 +31,7 @@ THE SOFTWARE.
   </parent>
 
   <artifactId>label-linked-jobs</artifactId>
-  <version>5.0-SNAPSHOT</version>
+  <version>5.0.1-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <name>Label Linked Jobs Plugin</name>
   <description>Gives the list of jobs associated to a given atomic label.</description>
@@ -91,5 +91,26 @@ THE SOFTWARE.
       <url>http://repo.jenkins-ci.org/public/</url>
     </pluginRepository>
   </pluginRepositories>
+  
+  <build>
+    <plugins>
+      <!-- section to avoid trouble while uploading -->
+      <!-- see http://jenkins-ci.361315.n4.nabble.com/Can-t-maven-release-my-plugin-401-on-upload-to-repo-jenkins-ci-org-td4796955.html -->
+      <!-- and https://issues.jenkins-ci.org/browse/INFRA-588 -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>2.6</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.wagon</groupId>
+            <artifactId>wagon-http</artifactId>
+            <version>2.10</version>
+            <type>jar</type>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

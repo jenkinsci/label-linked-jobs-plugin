@@ -30,6 +30,7 @@ import jenkins.model.Jenkins;
 import jenkins.plugins.linkedjobs.actions.LabelLinkedJobsAction;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
+import hudson.slaves.Cloud;
 import hudson.util.VersionNumber;
 
 public class LabelAtomData extends AbstractJobsGroup implements Comparable<LabelAtomData> {
@@ -72,6 +73,18 @@ public class LabelAtomData extends AbstractJobsGroup implements Comparable<Label
     
     public int getNodesCount() {
         return nodes.size();
+    }
+    
+    // JENKINS-32445
+    // return the number of clouds that can provision this atomic label
+    public int getCloudsCount() {
+        int result = 0;
+        for (Cloud c : Jenkins.getInstance().clouds) {
+            if (c.canProvision(labelAtom)) {
+                result++;
+            }
+        }
+        return result;
     }
     
     public boolean getPluginActiveForLabel() {

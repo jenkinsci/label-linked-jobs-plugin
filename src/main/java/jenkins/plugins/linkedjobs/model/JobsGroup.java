@@ -26,6 +26,7 @@ package jenkins.plugins.linkedjobs.model;
 
 import hudson.model.Label;
 import hudson.model.Node;
+import hudson.slaves.Cloud;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,6 +82,17 @@ public class JobsGroup extends AbstractJobsGroup implements Comparable<JobsGroup
     
     public boolean isSingleNode() {
         return applicableNodes.size() == 1;
+    }
+    
+    // clouds that can provision this label (and thus jobs in this group)
+    public List<Cloud> getProvisioningClouds() {
+        List<Cloud> provisioningClouds = new ArrayList<Cloud>();
+        for (Cloud c : Jenkins.getInstance().clouds) {
+            if (c.canProvision(label)) {
+                provisioningClouds.add(c);
+            }
+        }
+        return provisioningClouds;
     }
 
     /************************************

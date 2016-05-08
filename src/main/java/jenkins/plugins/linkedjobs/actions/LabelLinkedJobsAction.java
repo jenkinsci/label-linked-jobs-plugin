@@ -29,9 +29,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import jenkins.model.Jenkins;
 import jenkins.plugins.linkedjobs.model.JobsGroup;
 import hudson.model.Label;
 import hudson.model.labels.LabelAtom;
+import hudson.slaves.Cloud;
 
 /**
  * For each Label, Jenkins associates an object of this class to a Linked Jobs page.<br/><br/>
@@ -61,6 +63,24 @@ public class LabelLinkedJobsAction extends AbstractLinkedJobsAction {
     // will be called by my friend jelly via ${it.label}. Of course!
     public LabelAtom getLabel() {
         return this.label;
+    }
+    
+    // clouds that can provision this atomic label
+    public List<Cloud> getProvisioningClouds() {
+        List<Cloud> provisioningClouds = new ArrayList<Cloud>();
+        for (Cloud c : Jenkins.getInstance().clouds) {
+            if (c.canProvision(label)) {
+                provisioningClouds.add(c);
+            }
+        }
+        return provisioningClouds;
+    }
+    
+    // util function, because List doesn't have a function
+    // to get its size starting with 'get', so no way to call it
+    // directly in index.jelly
+    public int getSize(List<Cloud> l) {
+        return l == null ? 0 : l.size();
     }
 
     /**
