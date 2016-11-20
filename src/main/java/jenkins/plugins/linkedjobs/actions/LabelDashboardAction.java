@@ -189,7 +189,10 @@ public class LabelDashboardAction implements RootAction {
         for (Node node : Jenkins.getInstance().getNodes()) {
             listNodeLabels(nodesSelfLabels, tmpResult, node);
         }
-        
+
+        //list all available labels defined by all clouds' templates.
+        listCloudTemplateLabels(tmpResult);
+
         ArrayList<LabelAtomData> result = new ArrayList<LabelAtomData>();
         result.addAll(tmpResult.values());
         // sort labels alphabetically by name
@@ -498,6 +501,19 @@ public class LabelDashboardAction implements RootAction {
                 result.put(label, new LabelAtomData(label));
             }
             result.get(label).add(node);
+        }
+    }
+
+    private void listCloudTemplateLabels(HashMap<LabelAtom, LabelAtomData> result) {
+        //Listing all available labels so that later the cloud template related lables can be picked from them
+        for (Label label : Jenkins.getInstance().getLabels()) {
+            if (label.getClouds().size() > 0) {
+                for (LabelAtom labelAtom : label.listAtoms()) {
+                    if (!result.containsKey(labelAtom)) {
+                        result.put(labelAtom, new LabelAtomData(labelAtom));
+                    }
+                }
+            }
         }
     }
 }
