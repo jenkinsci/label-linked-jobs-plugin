@@ -35,26 +35,30 @@ THE SOFTWARE.
     <l:main-panel>
 
       <j:set var="groups" value="${it.jobsGroups}" />
+      <j:set var="clouds" value="${it.provisioningClouds}" />
+
+      <h2>Label "${it.label}" is
       <j:choose>
         <j:when test="${empty(groups)}">
-          <p>
-            <h2>Label "${it.label}" is not used by jobs</h2>
-          </p>
+          not used by jobs
         </j:when>
         <j:otherwise>
-          <h2>Label "${it.label}" is used by the following job(s)</h2>
-          <br/>
+          used by the following job(s)
+        </j:otherwise>
+      </j:choose>
+      </h2>
+      <br/>
 
-          <j:set var="clouds" value="${it.provisioningClouds}" />
-          <j:if test="${it.getSize(clouds) > 0}">
+      <j:if test="${it.getSize(clouds) > 0}">
           <div>
             Provisioning cloud<j:if test="${it.getSize(clouds) > 1}">s</j:if>:
             <j:forEach var="cloud" items="${clouds}" varStatus="loopStatus">
               ${cloud.displayName}<j:if test="${!loopStatus.last}">,&#160;</j:if>
             </j:forEach>
           </div><br/>
-          </j:if>
-          
+      </j:if>
+
+      <j:if test="${!empty(groups)}">
           <j:forEach var="group" items="${groups}">
             <h3>Job<j:if test="${group.hasMoreThanOneJob}">s</j:if> configured with <a href="${rootURL}/${group.labelURL}">${group.label}</a></h3>
  
@@ -111,8 +115,7 @@ THE SOFTWARE.
             
             <br/><br/>
           </j:forEach>
-        </j:otherwise>
-      </j:choose>
+      </j:if>
 
     </l:main-panel>
 
