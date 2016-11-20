@@ -27,11 +27,11 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.554</version><!-- which version of Jenkins is this plugin built against? Users must have at least this Jenkins version to use this plugin. -->
+    <version>2.5</version>
   </parent>
 
   <artifactId>label-linked-jobs</artifactId>
-  <version>5.0.1-SNAPSHOT</version>
+  <version>6.0.1-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <name>Label Linked Jobs Plugin</name>
   <description>Gives the list of jobs associated to a given atomic label.</description>
@@ -56,6 +56,13 @@ THE SOFTWARE.
       <timezone>-4</timezone>
     </developer>
   </developers>
+  
+  <properties>
+    <!-- Baseline Jenkins version you use to build and test the plugin. Users must have this version or newer to run. -->
+    <jenkins.version>1.554</jenkins.version>
+    <findbugs.failOnError>false</findbugs.failOnError>
+  </properties>
+  
 
   <dependencies>
     <dependency>

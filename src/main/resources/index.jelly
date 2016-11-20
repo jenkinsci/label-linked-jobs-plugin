@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   This view is used to render in the installed plugins page.
 -->
+<?jelly escape-by-default='true'?>
 <div>
     A plugin to facilitate maintenance when using numerous/complex labels.
 </div>
