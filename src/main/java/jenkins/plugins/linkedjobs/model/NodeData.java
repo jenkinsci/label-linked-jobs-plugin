@@ -55,8 +55,18 @@ public class NodeData extends AbstractJobsGroup implements Comparable<NodeData> 
     /************************************
      * Comparable interface implementation
      ************************************/
-    
+    @Override
     public int compareTo(NodeData o) {
         return this.getName().compareTo(o.getName());
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        return (o instanceof NodeData) && this.compareTo((NodeData)o) == 0;
+    }
+    
+    @Override
+    public int hashCode() {
+        return getName().hashCode();
     }
 }

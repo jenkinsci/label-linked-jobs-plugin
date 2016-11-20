@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import jenkins.model.Jenkins;
@@ -135,12 +136,13 @@ public class LabelDashboardAction implements RootAction {
             if (!(job instanceof TopLevelItem)) {
                 continue;
             }
-            if (job.getAssignedLabel() == null) {
+            Label assignedLabel = job.getAssignedLabel();
+            if (assignedLabel == null) {
                 // should we do something particular for jobs with no labels?
                 continue;
             }
 
-            for (LabelAtom labelAtom : job.getAssignedLabel().listAtoms()) {
+            for (LabelAtom labelAtom : assignedLabel.listAtoms()) {
                 if (nodesSelfLabels.contains(labelAtom)) {
                     // skip label that corresponds to a node name
                     // see getNodesData()
@@ -154,8 +156,8 @@ public class LabelDashboardAction implements RootAction {
         }
         
         // then browse list of triggered jobs
-        for (Label label : m_triggeredJobsByLabel.keySet()) {
-            for (LabelAtom labelAtom : label.listAtoms()) {
+        for (Map.Entry<Label, HashMap<AbstractProject<?, ?>, TriggeredJob>> entry: m_triggeredJobsByLabel.entrySet()) {
+            for (LabelAtom labelAtom : entry.getKey().listAtoms()) {
                 if (nodesSelfLabels.contains(labelAtom)) {
                     // skip label that corresponds to a node name
                     // see getNodesData()
@@ -164,13 +166,13 @@ public class LabelDashboardAction implements RootAction {
                 if (!tmpResult.containsKey(labelAtom)) {
                     tmpResult.put(labelAtom, new LabelAtomData(labelAtom));
                 }
-                tmpResult.get(labelAtom).addTriggeredJobs(m_triggeredJobsByLabel.get(label).values());
+                tmpResult.get(labelAtom).addTriggeredJobs(entry.getValue().values());
             }
         }
         
         // then browse list of jobs with default values for a Label parameter
-        for (Label label : m_jobsByDefaultLabel.keySet()) {
-            for (LabelAtom labelAtom : label.listAtoms()) {
+        for (Map.Entry<Label, List<AbstractProject<?,?>>> entry : m_jobsByDefaultLabel.entrySet()) {
+            for (LabelAtom labelAtom : entry.getKey().listAtoms()) {
                 if (nodesSelfLabels.contains(labelAtom)) {
                     // skip label that corresponds to a node name
                     // see getNodesData()
@@ -179,7 +181,7 @@ public class LabelDashboardAction implements RootAction {
                 if (!tmpResult.containsKey(labelAtom)) {
                     tmpResult.put(labelAtom, new LabelAtomData(labelAtom));
                 }
-                tmpResult.get(labelAtom).addJobsWithDefaultValue(m_jobsByDefaultLabel.get(label));
+                tmpResult.get(labelAtom).addJobsWithDefaultValue(entry.getValue());
             }
         }
         
@@ -287,10 +289,10 @@ public class LabelDashboardAction implements RootAction {
     // with no nodes - JENKINS-27588 - nor clouds - JENKINS-32445
     public List<TriggeredJob> getOrphanedTriggeredJobs() {
         ArrayList<TriggeredJob> orphanedJobs = new ArrayList<TriggeredJob>();
-        for (Label label : m_triggeredJobsByLabel.keySet()) {
-            if (isOrphanedLabel(label)) {
+        for (Map.Entry<Label, HashMap<AbstractProject<?, ?>, TriggeredJob>> entry : m_triggeredJobsByLabel.entrySet()) {
+            if (isOrphanedLabel(entry.getKey())) {
                 // all these triggered jobs are in trouble!
-                orphanedJobs.addAll(m_triggeredJobsByLabel.get(label).values());
+                orphanedJobs.addAll(entry.getValue().values());
             }
         }
         return orphanedJobs;
@@ -298,10 +300,10 @@ public class LabelDashboardAction implements RootAction {
     
     public Set<AbstractProject<?, ?>> getOrphanedDefaultValueJobs() {
         HashSet<AbstractProject<?, ?>> orphanedJobs = new HashSet<AbstractProject<?,?>>();
-        for (Label label : m_jobsByDefaultLabel.keySet()) {
-            if (isOrphanedLabel(label)) {
+        for (Map.Entry<Label, List<AbstractProject<?,?>>> entry : m_jobsByDefaultLabel.entrySet()) {
+            if (isOrphanedLabel(entry.getKey())) {
                 // all these triggered jobs are in trouble!
-                orphanedJobs.addAll(m_jobsByDefaultLabel.get(label));
+                orphanedJobs.addAll(entry.getValue());
             }
         }
         return orphanedJobs;
@@ -400,24 +402,24 @@ public class LabelDashboardAction implements RootAction {
         }
         
         // then scan the list of triggered jobs
-        for (Label label : m_triggeredJobsByLabel.keySet()) {
-            Node node = isSingleNode(label);
+        for (Map.Entry<Label, HashMap<AbstractProject<?, ?>, TriggeredJob>> entry : m_triggeredJobsByLabel.entrySet()) {
+            Node node = isSingleNode(entry.getKey());
             if (node != null) {
                 if (!tmpResult.containsKey(node)) {
                     tmpResult.put(node, new NodeData(node));
                 }
-                tmpResult.get(node).addTriggeredJobs(m_triggeredJobsByLabel.get(label).values());
+                tmpResult.get(node).addTriggeredJobs(entry.getValue().values());
             }
         }
 
         // then scan the list of jobs using default value for their Label parameter
-        for (Label label : m_jobsByDefaultLabel.keySet()) {
-            Node node = isSingleNode(label);
+        for (Map.Entry<Label, List<AbstractProject<?,?>>> entry : m_jobsByDefaultLabel.entrySet()) {
+            Node node = isSingleNode(entry.getKey());
             if (node != null) {
                 if (!tmpResult.containsKey(node)) {
                     tmpResult.put(node, new NodeData(node));
                 }
-                tmpResult.get(node).addJobsWithDefaultValue(m_jobsByDefaultLabel.get(label));
+                tmpResult.get(node).addJobsWithDefaultValue(entry.getValue());
             }
         }
 
@@ -449,11 +451,12 @@ public class LabelDashboardAction implements RootAction {
                 continue;
             }
             
-            if (job.getAssignedLabel() == null) {
+            Label assignedLabel = job.getAssignedLabel();
+            if (assignedLabel == null) {
                 continue;
             }
             
-            for (LabelAtom labelAtom : job.getAssignedLabel().listAtoms()) {
+            for (LabelAtom labelAtom : assignedLabel.listAtoms()) {
                 if (tmpResult.containsKey(labelAtom)) {
                     // ok, this corresponds to a node's self label. Let's use it
                     tmpResult.get(labelAtom).addJob(job);
@@ -462,19 +465,19 @@ public class LabelDashboardAction implements RootAction {
         }
         
         // then scan the list of triggered jobs
-        for (Label label : m_triggeredJobsByLabel.keySet()) {
-            for (LabelAtom labelAtom : label.listAtoms()) {
+        for (Map.Entry<Label, HashMap<AbstractProject<?, ?>, TriggeredJob>> entry : m_triggeredJobsByLabel.entrySet()) {
+            for (LabelAtom labelAtom : entry.getKey().listAtoms()) {
                 if (tmpResult.containsKey(labelAtom)) {
-                    tmpResult.get(labelAtom).addTriggeredJobs(m_triggeredJobsByLabel.get(label).values());
+                    tmpResult.get(labelAtom).addTriggeredJobs(entry.getValue().values());
                 }
             }
         }
         
         // then browse list of jobs with default values for a Label parameter
-        for (Label label : m_jobsByDefaultLabel.keySet()) {
-            for (LabelAtom labelAtom : label.listAtoms()) {
+        for (Map.Entry<Label, List<AbstractProject<?,?>>> entry : m_jobsByDefaultLabel.entrySet()) {
+            for (LabelAtom labelAtom : entry.getKey().listAtoms()) {
                 if (tmpResult.containsKey(labelAtom)) {
-                    tmpResult.get(labelAtom).addJobsWithDefaultValue(m_jobsByDefaultLabel.get(label));
+                    tmpResult.get(labelAtom).addJobsWithDefaultValue(entry.getValue());
                 }
             }
         }

@@ -110,7 +110,8 @@ public class TriggeredJobsHelper {
                             // do something with predefined parameters, that could be labels in triggered jobs configuration
                             try {
                                 Properties p = new Properties();
-                                p.load(new StringInputStream(((PredefinedBuildParameters)parameter).getProperties()));
+                                StringInputStream inputStream = new StringInputStream(((PredefinedBuildParameters)parameter).getProperties());
+                                p.load(inputStream);
                                 
                                 // remove all potentially unacceptable label (because of macro/token usage)
                                 Set<Object> keysSet = p.keySet();
@@ -121,6 +122,7 @@ public class TriggeredJobsHelper {
                                     }
                                 }
                                 addTriggeredJobsByPredefinedParameters(triggeredJobsByLabel, p, triggeredJobs, triggeringJob);
+                                inputStream.close();
                             }
                             catch (IOException ioe) {
                                 // TODO: log exception?

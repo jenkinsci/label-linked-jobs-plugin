@@ -71,7 +71,7 @@ public class JobsGroup extends AbstractJobsGroup implements Comparable<JobsGroup
     public String getLabel() {
         return label.getDisplayName();
     }
-    
+
     public String getLabelURL() {
         return label.getUrl();
     }
@@ -98,7 +98,18 @@ public class JobsGroup extends AbstractJobsGroup implements Comparable<JobsGroup
     /************************************
      * implements Comparable<JobsGroup>
      ************************************/
+    @Override
     public int compareTo(JobsGroup o) {
         return this.label.compareTo(o.label);
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        return (o instanceof JobsGroup) && this.compareTo((JobsGroup)o) == 0;
+    }
+    
+    @Override
+    public int hashCode() {
+        return label.hashCode();
     }
 }

@@ -26,6 +26,7 @@ package jenkins.plugins.linkedjobs.actions;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import jenkins.model.Jenkins;
 import jenkins.plugins.linkedjobs.helpers.TriggeredJobsHelper;
@@ -82,7 +83,8 @@ public abstract class AbstractLinkedJobsAction implements Action {
         HashMap<Label, HashMap<AbstractProject<?,?>, TriggeredJob>> triggeredJobsByLabel =
                 new HashMap<Label, HashMap<AbstractProject<?,?>, TriggeredJob>>();
         TriggeredJobsHelper.populateTriggeredJobs(triggeredJobsByLabel);
-        for (Label label : triggeredJobsByLabel.keySet()) {
+        for (Map.Entry<Label, HashMap<AbstractProject<?, ?>, TriggeredJob>> entry : triggeredJobsByLabel.entrySet()) {
+            Label label = entry.getKey();
             if (isLabelRelevant(label)) {
                 JobsGroup matchingJobGroup = tmpResult.get(label);
                 if (matchingJobGroup == null) {
@@ -90,21 +92,22 @@ public abstract class AbstractLinkedJobsAction implements Action {
                     tmpResult.put(label, matchingJobGroup);
                 }
                 // get the list of all triggered jobs
-                matchingJobGroup.addTriggeredJobs(triggeredJobsByLabel.get(label).values());
+                matchingJobGroup.addTriggeredJobs(entry.getValue().values());
             }
         }
         
         // then browse list of jobs with a Label parameter with a default value
         HashMap<Label, List<AbstractProject<?,?>>> jobsByDefaultLabel = new HashMap<Label, List<AbstractProject<?,?>>>();
         TriggeredJobsHelper.populateJobsWithLabelDefaultValue(jobsByDefaultLabel);
-        for (Label label : jobsByDefaultLabel.keySet()) {
+        for (Map.Entry<Label, List<AbstractProject<?, ?>>> entry : jobsByDefaultLabel.entrySet()) {
+            Label label = entry.getKey();
             if (isLabelRelevant(label)) {
                 JobsGroup matchJobsGroup = tmpResult.get(label);
                 if (matchJobsGroup == null) {
                     matchJobsGroup = new JobsGroup(label);
                     tmpResult.put(label, matchJobsGroup);
                 }
-                matchJobsGroup.addJobsWithDefaultValue(jobsByDefaultLabel.get(label));
+                matchJobsGroup.addJobsWithDefaultValue(entry.getValue());
             }
         }
 

@@ -99,8 +99,18 @@ public class LabelAtomData extends AbstractJobsGroup implements Comparable<Label
     /************************************
      * Comparable interface implementation
      ************************************/
-    
+    @Override
     public int compareTo(LabelAtomData o) {
         return this.labelAtom.compareTo(o.labelAtom);
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        return (o instanceof LabelAtomData) && this.compareTo((LabelAtomData)o) == 0;
+    }
+    
+    @Override
+    public int hashCode() {
+        return labelAtom.hashCode();
     }
 }
