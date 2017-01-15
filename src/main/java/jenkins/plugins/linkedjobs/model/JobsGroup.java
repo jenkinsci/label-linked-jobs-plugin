@@ -64,9 +64,9 @@ public class JobsGroup extends AbstractJobsGroup implements Comparable<JobsGroup
         }
     }
     
-    /************************************
-     * functions used to render display in index.jelly
-     ************************************/
+    //************************************************
+    // functions used to render display in index.jelly
+    //************************************************
     
     public String getLabel() {
         return label.getDisplayName();
@@ -95,9 +95,9 @@ public class JobsGroup extends AbstractJobsGroup implements Comparable<JobsGroup
         return provisioningClouds;
     }
 
-    /************************************
-     * implements Comparable<JobsGroup>
-     ************************************/
+    //*********************************
+    // implements Comparable<JobsGroup>
+    //*********************************
     @Override
     public int compareTo(JobsGroup o) {
         return this.label.compareTo(o.label);

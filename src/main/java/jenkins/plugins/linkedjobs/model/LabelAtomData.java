@@ -49,9 +49,9 @@ public class LabelAtomData extends AbstractJobsGroup implements Comparable<Label
         nodes.add(n);
     }
     
-    /************************************
-     * functions used to render display in index.jelly
-     ************************************/
+    //************************************************
+    // functions used to render display in index.jelly
+    //************************************************
     
     public String getDescription() {
         // configurable description for LabelAtom was implemented in Jenkins core v1.580

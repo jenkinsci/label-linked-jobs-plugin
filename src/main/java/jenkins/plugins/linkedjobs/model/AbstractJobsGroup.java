@@ -57,9 +57,9 @@ public abstract class AbstractJobsGroup {
         jobsWithLabelDefaultValue.addAll(jobs);
     }
 
-    /************************************
-     * functions used to render display in index.jelly
-     ************************************/
+    //************************************************
+    // functions used to render display in index.jelly
+    //************************************************
 
     public int getJobsCount() {
         return jobs.size();

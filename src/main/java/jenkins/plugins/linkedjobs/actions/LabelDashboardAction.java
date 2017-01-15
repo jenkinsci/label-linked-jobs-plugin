@@ -118,6 +118,7 @@ public class LabelDashboardAction implements RootAction {
      * to extract all LabelAtom defined. Goal is to list, per LabelAtom, all jobs
      * and all nodes associated to it.
      * It ignores nodes' self labels, that are managed by getNodesData()
+     * @return a list of LabelAtomData
      */
     public List<LabelAtomData> getLabelsData() {
         HashMap<LabelAtom, LabelAtomData> tmpResult = new HashMap<LabelAtom, LabelAtomData>();
@@ -433,6 +434,7 @@ public class LabelDashboardAction implements RootAction {
     /**
      * This function scans all jobs to find those that are
      * using nodes' self labels
+     * @return a collection of NodeData
      */
     public Collection<NodeData> getNodesData() {
         HashMap<LabelAtom, NodeData> tmpResult = new HashMap<LabelAtom, NodeData>();

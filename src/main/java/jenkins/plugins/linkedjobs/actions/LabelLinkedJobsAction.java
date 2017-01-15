@@ -36,8 +36,9 @@ import hudson.model.labels.LabelAtom;
 import hudson.slaves.Cloud;
 
 /**
- * For each Label, Jenkins associates an object of this class to a Linked Jobs page.<br/><br/>
- * This class is responsible for building & collecting the data necessary to build
+ * For each Label, Jenkins associates an object of this class to a Linked Jobs page.
+ * <p>
+ * This class is responsible for building and collecting the data necessary to build
  * this additional page. Besides boiler-plate code for pure UI purpose, the interesting
  * function is getJobsGroups, which scans all Jobs/Projects of this Jenkins instance
  * @author dominiquebrice

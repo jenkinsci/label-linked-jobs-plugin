@@ -34,7 +34,7 @@ import hudson.Extension;
 /**
  * The role of this class is to act as a central point for all things related to the
  * global configuration of the plugin, i.e. mainly the section shown in the 
- * Manage Jenkins\Configure System page.<BR/>
+ * Manage Jenkins\Configure System page.
  * @author dominiquebrice
  */
 @Extension
@@ -76,7 +76,7 @@ public class GlobalSettings extends GlobalConfiguration {
      * to extend Descriptor, so a variable still has to be carried from objects to objects.
      * This class is supposed to be a singleton anyway, let's make it accessible with a good
      * old static function
-     * @return
+     * @return global settings
      */
     public static GlobalSettings get() {
         return GlobalConfiguration.all().get(GlobalSettings.class);

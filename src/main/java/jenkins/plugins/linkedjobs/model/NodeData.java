@@ -36,9 +36,9 @@ public class NodeData extends AbstractJobsGroup implements Comparable<NodeData> 
         node = n;
     }
     
-    /************************************
-     * functions used to render display in index.jelly
-     ************************************/
+    //************************************************
+    // functions used to render display in index.jelly
+    //************************************************
     
     public String getName() {
         return node.getDisplayName();

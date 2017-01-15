@@ -40,8 +40,9 @@ import hudson.model.labels.LabelAtom;
 
 /**
  * For each Computer, Jenkins associates an object of this class to a Linked Jobs page
- * thanks to {@link jenkins.plugins.linkedjobs.extensions.ComputerExtension}.<br/><br/>
- * This class is responsible for building & collecting the data necessary to build
+ * thanks to {@link jenkins.plugins.linkedjobs.extensions.ComputerExtension}.
+ * <p>
+ * This class is responsible for building and collecting the data necessary to build
  * this additional page.
  * @author dominiquebrice
  *

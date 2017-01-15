@@ -38,8 +38,7 @@ import hudson.model.labels.LabelAtomProperty;
 import hudson.model.labels.LabelAtomPropertyDescriptor;
 
 /**
- * One ExtensionPoint of this plugin<BR/>
- * 
+ * One ExtensionPoint of this plugin
  * <ul><li>adds an Action, which makes an additional link available for Labels in the left-hand side menu to see linked jobs</li>
  * <li>defines the Descriptor class, which manages the plugin configuration <i>per label</i> - that is,
  * returns the name of the option to activate the plugin for that label
@@ -52,7 +51,8 @@ public class LabelExtension extends LabelAtomProperty {
     /**
      * This constructor is called by jenkins when the user saves
      * the configuration page of a given label, and has selected
-     * the checkbox to activate this extension.<BR/>
+     * the checkbox to activate this extension.
+     * <p>
      * Checkbox displayed with <code>LabelConfigurationDescriptor.getDisplayName()</code> as a label
      */
     @DataBoundConstructor
