@@ -5,3 +5,6 @@ work/
 .settings/
 .DS_Store
 /target
+.idea/
+label-linked-jobs.iml
+
