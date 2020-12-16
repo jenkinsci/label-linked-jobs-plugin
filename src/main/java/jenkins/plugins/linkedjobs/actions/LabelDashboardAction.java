@@ -37,21 +37,23 @@ import java.util.Set;
 
 import jenkins.model.Jenkins;
 import jenkins.plugins.linkedjobs.helpers.TriggeredJobsHelper;
-import jenkins.plugins.linkedjobs.model.JobsGroup;
 import jenkins.plugins.linkedjobs.model.LabelAtomData;
 import jenkins.plugins.linkedjobs.model.NodeData;
 import jenkins.plugins.linkedjobs.model.TriggeredJob;
 import jenkins.plugins.linkedjobs.settings.GlobalSettings;
+import jenkins.security.stapler.StaplerDispatchable;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Label;
 import hudson.model.Node;
-import hudson.model.Project;
 import hudson.model.labels.LabelAtom;
 import hudson.model.RootAction;
 import hudson.model.TopLevelItem;
+import hudson.util.HttpResponses;
 import hudson.slaves.Cloud;
-import hudson.tasks.Builder;
+
+import net.sf.json.JSONArray;
+import org.kohsuke.stapler.HttpResponse;
 
 /**
  * Action (and ExtensionPoint!) responsible for the display of the Labels Dashboard plugin page.
@@ -112,7 +114,14 @@ public class LabelDashboardAction implements RootAction {
     public boolean getHasAtLeastOneCloud() {
         return Jenkins.getInstance().clouds.size() > 0;
     }
-    
+
+    @StaplerDispatchable
+    public HttpResponse doLabelsData() {
+        getRefresh();
+        List<LabelAtomData> labels = getLabelsData();
+        return HttpResponses.okJSON(JSONArray.fromObject(labels));
+    }
+
     /**
      * This function scans all jobs and all nodes of this Jenkins instance
      * to extract all LabelAtom defined. Goal is to list, per LabelAtom, all jobs
