@@ -2,6 +2,11 @@
 
 This plugin can list all the labels and related jobs.
 
+# Get started
+
+[jcli](https://github.com/jenkins-zh/jenkins-cli) could help you upload this plugin into your
+Jenkins. The command is `jcli plugin upload`.
+
 # API
 
 URL: `GET http://localhost:8080/labelsdashboard/labelsData`
