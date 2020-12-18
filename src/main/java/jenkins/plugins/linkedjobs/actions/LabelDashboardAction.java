@@ -119,6 +119,11 @@ public class LabelDashboardAction implements RootAction {
     public HttpResponse doLabelsData() {
         getRefresh();
         List<LabelAtomData> labels = getLabelsData();
+        if (labels.size() == 0) {
+            // sometimes it's empty, in order to have the correct list, try it again
+            getRefresh();
+            labels = getLabelsData();
+        }
         return HttpResponses.okJSON(JSONArray.fromObject(labels));
     }
 
