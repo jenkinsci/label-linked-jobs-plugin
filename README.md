@@ -9,6 +9,8 @@ Jenkins. The command is `jcli plugin upload`.
 
 # API
 
+## labels
+
 URL: `GET http://localhost:8080/labelsdashboard/labelsData`
 
 Response:
@@ -32,5 +34,42 @@ Response:
       "triggeredJobsCount": 0
     }
   ]
+}
+```
+
+## nodes
+
+URL: `GET http://localhost:8080/labelsdashboard/nodesData`
+
+Response:
+```
+{
+    "status": "ok",
+    "data": [
+        {
+            "hasMoreThanOneJob": false,
+            "jobs": [],
+            "jobsCount": 0,
+            "jobsWithLabelDefaultValue": [],
+            "jobsWithLabelDefaultValueCount": 0,
+            "labelURL": "label/master/",
+            "name": "Jenkins",
+            "nodeURL": "computer/(master)/",
+            "triggeredJobs": [],
+            "triggeredJobsCount": 0
+        },
+        {
+            "hasMoreThanOneJob": false,
+            "jobs": [],
+            "jobsCount": 0,
+            "jobsWithLabelDefaultValue": [],
+            "jobsWithLabelDefaultValueCount": 0,
+            "labelURL": "label/macos1/",
+            "name": "macos1",
+            "nodeURL": "computer/macos1/",
+            "triggeredJobs": [],
+            "triggeredJobsCount": 0
+        }
+    ]
 }
 ```

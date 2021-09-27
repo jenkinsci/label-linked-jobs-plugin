@@ -444,6 +444,18 @@ public class LabelDashboardAction implements RootAction {
         Collections.sort(result);
         return result;
     }
+
+    @StaplerDispatchable
+    public HttpResponse doNodesData() {
+        getRefresh();
+        Collection<NodeData> nodes = getNodesData();
+        if (nodes.size() == 0) {
+            // sometimes it's empty, in order to have the correct list, try it again
+            getRefresh();
+            nodes = getNodesData();
+        }
+        return HttpResponses.okJSON(JSONArray.fromObject(nodes));
+    }
     
     /**
      * This function scans all jobs to find those that are
