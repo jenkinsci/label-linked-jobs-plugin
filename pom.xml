@@ -65,6 +65,14 @@ THE SOFTWARE.
   
 
   <dependencies>
+    <!-- Fix RequireUpperBoundDeps enforcer rule -->
+    <dependency>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
+      <version>4.2.3</version>
+      <scope>provided</scope>
+      <optional>true</optional>
+    </dependency>
     <dependency>
       <!--  JENKINS-27588, need to define dependency on this plugin to be able -->
       <!--  to use its classes detect its configuration in jobs -->
