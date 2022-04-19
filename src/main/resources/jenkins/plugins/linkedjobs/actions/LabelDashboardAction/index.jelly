@@ -33,55 +33,105 @@ THE SOFTWARE.
     <st:include it="${app}" page="sidepanel.jelly"/>
 
     <l:main-panel>
-    
+
+      <style>
+        .labelsdashboard > thead > tr > th {
+          padding-right: 20px;
+        }
+        .labelsdashboard > tbody > tr > td {
+          padding-right: 20px;
+        }
+        .right {
+          text-align: right;
+        }
+      </style>
+      <j:set var="jenkinsversion" value="${app.version}"/>
+      <j:new var="newversion" className="hudson.util.VersionNumber">
+        <j:arg value="2.321" type="java.lang.String"/>
+      </j:new>
+      <j:if test="${jenkinsversion.isOlderThan(newversion)}">
+        <j:set var="classes" value="pane bigtable stripped-odd bigtable--compact"/>
+      </j:if>
+      <j:if test="${jenkinsversion.isNewerThanOrEqualTo(newversion)}">
+        <j:set var="classes" value="jenkins-table jenkins-table--small"/>
+      </j:if>
       <h2>Labels</h2>
       <j:set var="unused" value="${it.refresh}" />
       <j:set var="hasClouds" value="${it.hasAtLeastOneCloud}" />
       <j:set var="labels" value="${it.labelsData}" />
-      <j:forEach var="label" items="${labels}">
-        <div>
+      <div class="pane-frame" style="display: inline-block">
+      <table class="labelsdashboard sortable ${classes}" style="width: auto">
+        <thead>
+          <tr>
+            <th style="text-align: left">Label</th>
+            <th># of Jobs</th>
+            <th tooltip="The number of jobs that are triggered by other jobs using the Label with a Node/Label Parameter"># of Triggered Job Configurations</th>
+            <th tooltip="The number of jobs that have the label as default value for their Node/Label Parameter"># of Default Label Job Configurations</th>
+            <th># of Nodes</th>
+            <j:if test="${hasClouds}">
+              <th># of Clouds</th>
+            </j:if>
+          </tr>
+        </thead>
+        <j:forEach var="label" items="${labels}">
           <j:set var="jobCount" value="${label.jobsCount}" />
-          <j:set var="triggeredJobCount" value="${label.triggeredJobsCount}" />
-          <j:set var="jobsWithLabelDefaultValueCount" value="${label.jobsWithLabelDefaultValueCount}" />
           <j:set var="nodeCount" value="${label.nodesCount}" />
           <j:set var="cloudCount" value="${label.cloudsCount}" />
           <j:set var="pluginActive" value="${label.pluginActiveForLabel}" />
-          <h4><a href="${rootURL}/${label.labelURL}">${label.label}</a></h4>
-          <j:if test="${pluginActive}">
-            This label is used by <a href="${rootURL}/${label.labelURL}linkedjobs">${jobCount} job<j:if test="${jobCount > 1}">s</j:if></a>.
-          </j:if>
-          <j:if test="${!pluginActive}">
-            This label is used by ${jobCount} job<j:if test="${jobCount > 1}">s</j:if>. <a href="${rootURL}/${label.labelURL}configure">Activate</a> its Linked Jobs page to know more.
-          </j:if>
-          <j:if test="${(jobCount + triggeredJobCount + jobsWithLabelDefaultValueCount) == 0}"><b><font color="red">You should verify your configuration.</font></b></j:if><br/>
-          <j:if test="${triggeredJobCount > 0}">This label is used by ${triggeredJobCount} triggered job configuration<j:if test="${triggeredJobCount > 1}">s</j:if>.<br/></j:if>
-          <j:if test="${jobsWithLabelDefaultValueCount == 1}">This label is used by 1 job as a default value for its Label parameter.<br/></j:if>
-          <j:if test="${jobsWithLabelDefaultValueCount > 1}">This label is used by ${jobsWithLabelDefaultValueCount} jobs as a default value for their Label parameter.<br/></j:if>
-          This label is defined by ${nodeCount} node<j:if test="${nodeCount > 1}">s</j:if>.
-          <j:if test="${hasClouds}">It can be provisioned by ${cloudCount} cloud<j:if test="${cloudCount > 1}">s</j:if>.&amp;nbsp;</j:if>
-          <j:if test="${(nodeCount == 0) &amp;&amp; ((!hasClouds) || (cloudCount == 0))}"><b><font color="red">You should verify your configuration.</font></b></j:if>
-        </div>
-      </j:forEach>
+          <j:set var="triggeredJobCount" value="${label.triggeredJobsCount}" />
+          <j:set var="jobsWithLabelDefaultValueCount" value="${label.jobsWithLabelDefaultValueCount}" />
+          <tr>
+            <td><a class="jenkins-table__link model-link inside" href="${rootURL}/${label.labelURL}">${label.label}</a>
+              <j:if test="${(jobCount + triggeredJobCount + jobsWithLabelDefaultValueCount) == 0}">&amp;nbsp;<l:icon class="icon-sm icon-warning" tooltip="Label is not used anywhere. You should verify your configuration."/></j:if>
+              <j:if test="${(nodeCount == 0) &amp;&amp; ((!hasClouds) || (cloudCount == 0))}">&amp;nbsp;<l:icon class="icon-sm icon-error" tooltip="Label not served by any agent or cloud. You should verify your configuration."/></j:if>
+            </td>
+            <td class="right">
+              <j:if test="${pluginActive}"><a class="jenkins-table__link" href="${rootURL}/${label.labelURL}linkedjobs">${jobCount}</a>
+              </j:if>
+              <j:if test="${!pluginActive}"><a class="jenkins-table__link" href="${rootURL}/${label.labelURL}configure" tooltip="Activate Linked Jobs page to know more">${jobCount}</a>
+              </j:if>
+            </td>
+            <td class="right">${triggeredJobCount}</td>
+            <td class="right">${jobsWithLabelDefaultValueCount}</td>
+            <td class="right">${nodeCount}</td>
+            <j:if test="${hasClouds}">
+              <td class="right">${cloudCount}</td>
+            </j:if>
+          </tr>
+        </j:forEach>
+      </table>
+      </div>
       <br/><br/>
 
+      <h2>Agents</h2>
       <j:set var="allExclusive" value="${it.onlyExclusiveNodes}" />
-      <h2>Nodes</h2>
       <j:if test="${allExclusive}">
         Note: all nodes are in exclusive mode.
       </j:if>
       <j:set var="nodes" value="${it.nodesData}" />
-      <j:forEach var="node" items="${nodes}">
-        <div>
-          <j:set var="jobCount" value="${node.jobsCount}" />
-          <j:set var="triggeredJobCount" value="${node.triggeredJobsCount}" />
-          <j:set var="jobsWithLabelDefaultValueCount" value="${node.jobsWithLabelDefaultValueCount}" />
-          <h4><a href="${rootURL}/${node.nodeURL}">${node.name}</a></h4>
-          This node's <a href="${rootURL}/${node.labelURL}">label</a> is used by ${jobCount} job<j:if test="${jobCount > 1}">s</j:if>.
-          <j:if test="${triggeredJobCount > 0}"><br/>This node's label is used by ${triggeredJobCount} triggered job<j:if test="${triggeredJobCount > 1}">s</j:if>.</j:if>
-          <j:if test="${jobsWithLabelDefaultValueCount == 1}"><br/>This node's label is used by 1 job as a default value for its Label parameter.<br/></j:if>
-          <j:if test="${jobsWithLabelDefaultValueCount > 1}"><br/>This node's label is used by ${jobsWithLabelDefaultValueCount} jobs as a default value for their Label parameter.<br/></j:if>
-        </div>
-      </j:forEach>
+      <div class="pane-frame" style="display: inline-block">
+      <table class="labelsdashboard sortable ${classes}" style="width: auto">
+        <thead>
+          <tr>
+            <th style="text-align: left">Name</th>
+            <th># of Jobs</th>
+            <th># of Triggered Job Configurations</th>
+            <th># of Default Label Job Configurations</th>
+          </tr>
+        </thead>
+        <j:forEach var="node" items="${nodes}">
+          <tr>
+            <j:set var="jobCount" value="${node.jobsCount}" />
+            <j:set var="triggeredJobCount" value="${node.triggeredJobsCount}" />
+            <j:set var="jobsWithLabelDefaultValueCount" value="${node.jobsWithLabelDefaultValueCount}" />
+            <td><a class="jenkins-table__link model-link inside" href="${rootURL}/${node.nodeURL}">${node.name}</a></td>
+            <td class="right"><a class="jenkins-table__link model-link inside" href="${rootURL}/${node.labelURL}">${jobCount}</a></td>
+            <td class="right">${triggeredJobCount}</td>
+            <td class="right">${jobsWithLabelDefaultValueCount}</td>
+          </tr>
+        </j:forEach>
+      </table>
+      </div>
       <br/><br/>
 
       <j:set var="orphanedJobs" value="${it.orphanedJobs}" />
