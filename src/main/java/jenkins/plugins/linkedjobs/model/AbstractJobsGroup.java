@@ -30,6 +30,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+
+@ExportedBean(defaultVisibility=2)
 public abstract class AbstractJobsGroup {
 
     // list of jobs functionally tied to this label/node
@@ -61,32 +65,39 @@ public abstract class AbstractJobsGroup {
     // functions used to render display in index.jelly
     //************************************************
 
+    @Exported
     public int getJobsCount() {
         return jobs.size();
     }
 
+    @Exported
     public int getTriggeredJobsCount() {
         return triggeredJobs.size();
     }
     
     // return the number of jobs that uses this labelAtom or node's labelAtom
     // as (part of) their default value for a Label parameter
+    @Exported
     public int getJobsWithLabelDefaultValueCount() {
         return jobsWithLabelDefaultValue.size();
     }
     
+    @Exported
     public List<AbstractProject<?, ?>> getJobs() {
         return jobs;
     }
     
+    @Exported
     public List<TriggeredJob> getTriggeredJobs() {
         return triggeredJobs;
     }
     
+    @Exported
     public List<AbstractProject<?, ?>> getJobsWithLabelDefaultValue() {
         return jobsWithLabelDefaultValue;
     }
     
+    @Exported
     public boolean getHasMoreThanOneJob() {
         return (jobs.size() + triggeredJobs.size() + jobsWithLabelDefaultValue.size()) > 1;
     }

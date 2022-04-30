@@ -44,6 +44,7 @@ import jenkins.plugins.linkedjobs.settings.GlobalSettings;
 import jenkins.security.stapler.StaplerDispatchable;
 import hudson.Extension;
 import hudson.model.AbstractProject;
+import hudson.model.Api;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
@@ -54,6 +55,8 @@ import hudson.slaves.Cloud;
 
 import net.sf.json.JSONArray;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Action (and ExtensionPoint!) responsible for the display of the Labels Dashboard plugin page.
@@ -112,19 +115,43 @@ public class LabelDashboardAction implements RootAction {
     // boolean indicator used on the dashboard page to determine whether
     // clouds information should be displayed at all
     public boolean getHasAtLeastOneCloud() {
-        return Jenkins.getInstance().clouds.size() > 0;
+        return Jenkins.get().clouds.size() > 0;
     }
 
-    @StaplerDispatchable
-    public HttpResponse doLabelsData() {
-        getRefresh();
-        List<LabelAtomData> labels = getLabelsData();
-        if (labels.size() == 0) {
-            // sometimes it's empty, in order to have the correct list, try it again
-            getRefresh();
-            labels = getLabelsData();
-        }
-        return HttpResponses.okJSON(JSONArray.fromObject(labels));
+    @ExportedBean
+    public static class Data {
+      private final List<LabelAtomData> labels;
+      private final Collection<NodeData> nodes;
+      private Data(List<LabelAtomData> labels, Collection<NodeData> nodes) {
+        this.labels = labels;
+        this.nodes = nodes;
+      }
+      
+      @Exported(visibility=1)
+      public List<LabelAtomData> getLabels()
+      {
+        return labels;
+      }
+
+      @Exported(visibility=1)
+      public Collection<NodeData> getNodes()
+      {
+        return nodes;
+      }
+
+    }
+    
+    public final Api getApi() {
+      getRefresh();
+      List<LabelAtomData> labels = getLabelsData();
+      Collection<NodeData> nodes = getNodesData();
+      if (nodes.size() == 0 || labels.size() == 0) {
+          getRefresh();
+          nodes = getNodesData();
+          labels = getLabelsData();
+      }
+      
+      return new Api(new Data(labels, nodes));
     }
 
     /**
