@@ -27,14 +27,12 @@ package jenkins.plugins.linkedjobs.model;
 import java.util.ArrayList;
 
 import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
 
 import jenkins.model.Jenkins;
 import jenkins.plugins.linkedjobs.actions.LabelLinkedJobsAction;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 import hudson.slaves.Cloud;
-import hudson.util.VersionNumber;
 
 public class LabelAtomData extends AbstractJobsGroup implements Comparable<LabelAtomData> {
 
@@ -87,7 +85,7 @@ public class LabelAtomData extends AbstractJobsGroup implements Comparable<Label
     @Exported
     public int getCloudsCount() {
         int result = 0;
-        for (Cloud c : Jenkins.getInstance().clouds) {
+        for (Cloud c : Jenkins.get().clouds) {
             if (c.canProvision(labelAtom)) {
                 result++;
             }

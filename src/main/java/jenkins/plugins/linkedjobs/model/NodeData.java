@@ -28,7 +28,7 @@ import jenkins.model.Jenkins;
 
 import org.kohsuke.stapler.export.Exported;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.model.Computer;
 import hudson.model.Node;
 
 public class NodeData extends AbstractJobsGroup implements Comparable<NodeData> {
@@ -55,9 +55,12 @@ public class NodeData extends AbstractJobsGroup implements Comparable<NodeData> 
     }
     
     @Exported
-    @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",justification = "controller has always a computer")
     public String getNodeURL() {
-        return Jenkins.get().getComputer(node.getNodeName()).getUrl();
+        Computer c = Jenkins.get().getComputer(node.getNodeName());
+        if (c != null) {
+            return c.getUrl();
+        }
+        return null;
     }
 
     /************************************

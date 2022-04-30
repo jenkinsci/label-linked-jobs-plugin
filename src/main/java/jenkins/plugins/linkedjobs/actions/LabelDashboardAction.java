@@ -166,15 +166,15 @@ public class LabelDashboardAction implements RootAction {
         
         // build a list of all the nodes self labels
         HashSet<LabelAtom> nodesSelfLabels = new HashSet<LabelAtom>();
-        nodesSelfLabels.add(Jenkins.getInstance().getSelfLabel());
-        for (Node node : Jenkins.getInstance().getNodes()) {
+        nodesSelfLabels.add(Jenkins.get().getSelfLabel());
+        for (Node node : Jenkins.get().getNodes()) {
             nodesSelfLabels.add(node.getSelfLabel());
         }
         
         // This loop is directly inspired from hudson.model.Label.getTiedJobs()
         // List all LabelAtom used by all jobs, except nodes self labels that are
         // processed in getNodesData()
-        for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+        for (AbstractProject<?, ?> job : Jenkins.get().getAllItems(AbstractProject.class)) {
             if (!(job instanceof TopLevelItem)) {
                 continue;
             }
@@ -229,8 +229,8 @@ public class LabelDashboardAction implements RootAction {
         
         // list all LabelAtom defined by all nodes, including Jenkins master node,
         // but ignore nodes' self labels. See listNodeLabels()
-        listNodeLabels(nodesSelfLabels, tmpResult, Jenkins.getInstance());
-        for (Node node : Jenkins.getInstance().getNodes()) {
+        listNodeLabels(nodesSelfLabels, tmpResult, Jenkins.get());
+        for (Node node : Jenkins.get().getNodes()) {
             listNodeLabels(nodesSelfLabels, tmpResult, node);
         }
 
@@ -252,7 +252,7 @@ public class LabelDashboardAction implements RootAction {
      * @return true only if all nodes are set to Mode.EXCLUSIVE
      */
     public static boolean getOnlyExclusiveNodes() {
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         if (!Node.Mode.EXCLUSIVE.equals(jenkins.getMode())) {
             return false;
         }
@@ -269,7 +269,7 @@ public class LabelDashboardAction implements RootAction {
     // this function returns all jobs that have no associated label(s)
     public List<AbstractProject<?, ?>> getJobsWithNoLabels() {
         ArrayList<AbstractProject<?, ?>> noLabelsJobs = new ArrayList<AbstractProject<?, ?>>();
-        for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+        for (AbstractProject<?, ?> job : Jenkins.get().getAllItems(AbstractProject.class)) {
             if (!(job instanceof TopLevelItem)) {
                 // consider only TopLevelItem - not 100% sure why, though...
                 continue;
@@ -304,7 +304,7 @@ public class LabelDashboardAction implements RootAction {
             }
             return false;
         }
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         if (label.matches(jenkins)) {
             // this job can run on the master, skip it
             return false;
@@ -318,7 +318,7 @@ public class LabelDashboardAction implements RootAction {
         }
         
         // JENKINS-32445, also look for clouds that could support this label
-        for (Cloud c : Jenkins.getInstance().clouds) {
+        for (Cloud c : Jenkins.get().clouds) {
             if (c.canProvision(label)) {
                 return false;
             }
@@ -355,7 +355,7 @@ public class LabelDashboardAction implements RootAction {
     // because of labels (mis-)configuration
     public List<AbstractProject<?, ?>> getOrphanedJobs() {
         ArrayList<AbstractProject<?, ?>> orphanedJobs = new ArrayList<AbstractProject<?, ?>>();
-        for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+        for (AbstractProject<?, ?> job : Jenkins.get().getAllItems(AbstractProject.class)) {
             if (!(job instanceof TopLevelItem)) {
                 // consider only TopLevelItem - not 100% sure why, though...
                 continue;
@@ -380,7 +380,7 @@ public class LabelDashboardAction implements RootAction {
      */
     private Node isSingleNode(Label label) {
         Node node = null;
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         if (label.matches(jenkins)) {
             node  = jenkins;
         }
@@ -413,7 +413,7 @@ public class LabelDashboardAction implements RootAction {
     public List<NodeData> getSingleNodeJobs() {
         HashMap<Node, NodeData> tmpResult = new HashMap<Node, NodeData>();
 
-        for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+        for (AbstractProject<?, ?> job : Jenkins.get().getAllItems(AbstractProject.class)) {
             if (!(job instanceof TopLevelItem)) {
                 // consider only TopLevelItem - not 100% sure why, though...
                 continue;
@@ -481,15 +481,15 @@ public class LabelDashboardAction implements RootAction {
         HashMap<LabelAtom, NodeData> tmpResult = new HashMap<LabelAtom, NodeData>();
         
         // prefill the results with all nodes
-        tmpResult.put(Jenkins.getInstance().getSelfLabel(),
-                new NodeData(Jenkins.getInstance()));
-        for (Node node : Jenkins.getInstance().getNodes()) {
+        tmpResult.put(Jenkins.get().getSelfLabel(),
+                new NodeData(Jenkins.get()));
+        for (Node node : Jenkins.get().getNodes()) {
             tmpResult.put(node.getSelfLabel(), new NodeData(node));
         }
         
         // This loop is directly inspired from hudson.model.Label.getTiedJobs()
         // Find all jobs that are using directly some nodes' self labels
-        for (AbstractProject<?, ?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+        for (AbstractProject<?, ?> job : Jenkins.get().getAllItems(AbstractProject.class)) {
             if (!(job instanceof TopLevelItem)) {
                 continue;
             }
@@ -552,7 +552,7 @@ public class LabelDashboardAction implements RootAction {
 
     private void listCloudTemplateLabels(HashMap<LabelAtom, LabelAtomData> result) {
         //Listing all available labels so that later the cloud template related lables can be picked from them
-        for (Label label : Jenkins.getInstance().getLabels()) {
+        for (Label label : Jenkins.get().getLabels()) {
             if (label.getClouds().size() > 0) {
                 for (LabelAtom labelAtom : label.listAtoms()) {
                     if (!result.containsKey(labelAtom)) {
