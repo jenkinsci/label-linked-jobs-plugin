@@ -59,7 +59,7 @@ public class LabelAtomData extends AbstractJobsGroup implements Comparable<Label
     @Exported
     public String getDescription() {
         // configurable description for LabelAtom was implemented in Jenkins core v1.580
-        if (Jenkins.getVersion() != null && !Jenkins.getVersion().isOlderThan(new VersionNumber("1.580"))) {
+        if (Jenkins.getVersion() != null) {
             return labelAtom.getDescription() != null && labelAtom.getDescription().trim().length() > 0 ? labelAtom.getDescription() : null;
         }
         else {
