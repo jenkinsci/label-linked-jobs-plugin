@@ -26,12 +26,13 @@ package jenkins.plugins.linkedjobs.model;
 
 import java.util.ArrayList;
 
+import org.kohsuke.stapler.export.Exported;
+
 import jenkins.model.Jenkins;
 import jenkins.plugins.linkedjobs.actions.LabelLinkedJobsAction;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 import hudson.slaves.Cloud;
-import hudson.util.VersionNumber;
 
 public class LabelAtomData extends AbstractJobsGroup implements Comparable<LabelAtomData> {
 
@@ -53,9 +54,10 @@ public class LabelAtomData extends AbstractJobsGroup implements Comparable<Label
     // functions used to render display in index.jelly
     //************************************************
     
+    @Exported
     public String getDescription() {
         // configurable description for LabelAtom was implemented in Jenkins core v1.580
-        if (Jenkins.getVersion() != null && !Jenkins.getVersion().isOlderThan(new VersionNumber("1.580"))) {
+        if (Jenkins.getVersion() != null) {
             return labelAtom.getDescription() != null && labelAtom.getDescription().trim().length() > 0 ? labelAtom.getDescription() : null;
         }
         else {
@@ -63,23 +65,27 @@ public class LabelAtomData extends AbstractJobsGroup implements Comparable<Label
         }
     }
     
+    @Exported
     public String getLabel() {
         return labelAtom.getDisplayName();
     }
     
+    @Exported
     public String getLabelURL() {
         return labelAtom.getUrl();
     }
     
+    @Exported
     public int getNodesCount() {
         return nodes.size();
     }
     
     // JENKINS-32445
     // return the number of clouds that can provision this atomic label
+    @Exported
     public int getCloudsCount() {
         int result = 0;
-        for (Cloud c : Jenkins.getInstance().clouds) {
+        for (Cloud c : Jenkins.get().clouds) {
             if (c.canProvision(labelAtom)) {
                 result++;
             }
@@ -87,6 +93,7 @@ public class LabelAtomData extends AbstractJobsGroup implements Comparable<Label
         return result;
     }
     
+    @Exported
     public boolean getPluginActiveForLabel() {
         for (hudson.model.Action a : labelAtom.getActions()) {
             if (a instanceof LabelLinkedJobsAction) {

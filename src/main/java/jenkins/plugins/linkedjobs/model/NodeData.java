@@ -25,6 +25,10 @@
 package jenkins.plugins.linkedjobs.model;
 
 import jenkins.model.Jenkins;
+
+import org.kohsuke.stapler.export.Exported;
+
+import hudson.model.Computer;
 import hudson.model.Node;
 
 public class NodeData extends AbstractJobsGroup implements Comparable<NodeData> {
@@ -40,16 +44,23 @@ public class NodeData extends AbstractJobsGroup implements Comparable<NodeData> 
     // functions used to render display in index.jelly
     //************************************************
     
+    @Exported
     public String getName() {
         return node.getDisplayName();
     }
     
+    @Exported
     public String getLabelURL() {
         return node.getSelfLabel().getUrl();
     }
     
+    @Exported
     public String getNodeURL() {
-        return Jenkins.getInstance().getComputer(node.getNodeName()).getUrl();
+        Computer c = Jenkins.get().getComputer(node.getNodeName());
+        if (c != null) {
+            return c.getUrl();
+        }
+        return null;
     }
 
     /************************************
