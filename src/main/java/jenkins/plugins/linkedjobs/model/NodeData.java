@@ -24,6 +24,7 @@
 
 package jenkins.plugins.linkedjobs.model;
 
+import hudson.model.Computer;
 import jenkins.model.Jenkins;
 import hudson.model.Node;
 
@@ -49,7 +50,12 @@ public class NodeData extends AbstractJobsGroup implements Comparable<NodeData> 
     }
     
     public String getNodeURL() {
-        return Jenkins.getInstance().getComputer(node.getNodeName()).getUrl();
+        Jenkins jenkins = Jenkins.get();
+        Computer computer = jenkins.getComputer(node.getNodeName());
+        if (computer == null) {
+            return null;
+        }
+        return computer.getUrl();
     }
 
     /************************************
