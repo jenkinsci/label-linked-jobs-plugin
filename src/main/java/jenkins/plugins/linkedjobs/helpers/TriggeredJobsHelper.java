@@ -12,7 +12,6 @@ import hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig;
 import hudson.plugins.parameterizedtrigger.PredefinedBuildParameters;
 import hudson.plugins.parameterizedtrigger.TriggerBuilder;
 import hudson.tasks.Builder;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,25 +20,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
 import jenkins.model.Jenkins;
 import jenkins.plugins.linkedjobs.model.TriggeredJob;
-
 import org.apache.tools.ant.filters.StringInputStream;
 import org.jvnet.jenkins.plugins.nodelabelparameter.LabelParameterDefinition;
 import org.jvnet.jenkins.plugins.nodelabelparameter.parameterizedtrigger.AllNodesForLabelBuildParameterFactory;
 import org.jvnet.jenkins.plugins.nodelabelparameter.parameterizedtrigger.NodeLabelBuildParameter;
 
 public class TriggeredJobsHelper {
-    
+
     // list all jobs that are "parameterized", and for which at least one of the
     // parameter is a Label parameter from the NodeLabelParameter plugin.
     // group them by label, using the default parameter of their Label parameter
     public static void populateJobsWithLabelDefaultValue(
-            HashMap<Label, List<AbstractProject<?,?>>> jobsByDefaultLabel) {
+            HashMap<Label, List<AbstractProject<?, ?>>> jobsByDefaultLabel) {
 
         if (Jenkins.getInstance().getPlugin("parameterized-trigger") == null
-         || Jenkins.getInstance().getPlugin("nodelabelparameter") == null) {
+                || Jenkins.getInstance().getPlugin("nodelabelparameter") == null) {
             return; // plugins not active, nothing to do
         }
 
@@ -61,7 +58,7 @@ public class TriggeredJobsHelper {
                         Label label = Jenkins.getInstance().getLabel(defaultLabel);
                         List<AbstractProject<?, ?>> jobsForThisLabel = jobsByDefaultLabel.get(label);
                         if (jobsForThisLabel == null) {
-                            jobsForThisLabel = new ArrayList<AbstractProject<?,?>>();
+                            jobsForThisLabel = new ArrayList<AbstractProject<?, ?>>();
                             jobsByDefaultLabel.put(label, jobsForThisLabel);
                         }
                         jobsForThisLabel.add(job);
@@ -75,67 +72,70 @@ public class TriggeredJobsHelper {
     // NodeLabel Parameter Plugin and Parameterized Trigger Plugin to override 'on the fly'
     // the label parameter of the triggered job
     public static void populateTriggeredJobs(
-            HashMap<Label, HashMap<AbstractProject<?,?>, TriggeredJob>> triggeredJobsByLabel) {
-        
+            HashMap<Label, HashMap<AbstractProject<?, ?>, TriggeredJob>> triggeredJobsByLabel) {
+
         if (Jenkins.getInstance().getPlugin("parameterized-trigger") == null
-         || Jenkins.getInstance().getPlugin("nodelabelparameter") == null) {
+                || Jenkins.getInstance().getPlugin("nodelabelparameter") == null) {
             return; // plugins not active, nothing to do
         }
-        
-        for (AbstractProject<?, ?> triggeringJob : Jenkins.getInstance().getAllItems(
-                AbstractProject.class)) {
-            
+
+        for (AbstractProject<?, ?> triggeringJob : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+
             if (!(triggeringJob instanceof Project)) {
                 continue;
             }
-            for (Builder builder : (List<Builder>)((Project<?, ?>)triggeringJob).getBuilders()) {
+            for (Builder builder : (List<Builder>) ((Project<?, ?>) triggeringJob).getBuilders()) {
                 if (!(builder instanceof TriggerBuilder)) {
                     continue;
                 }
                 // this job is triggering other jobs...
                 List<BlockableBuildTriggerConfig> configs = ((TriggerBuilder) builder).getConfigs();
                 for (BlockableBuildTriggerConfig config : configs) {
-                    
+
                     List<AbstractProject> triggeredJobs = config.getProjectList(null);
-                    
+
                     // use case one: a Parameters section
                     for (AbstractBuildParameters parameter : config.getConfigs()) {
                         if (parameter instanceof NodeLabelBuildParameter) {
                             // job is triggering other jobs based on specific label
                             // using the nodelabelparameter plugin
-                            addTriggeredJobsByLabel(triggeredJobsByLabel, ((NodeLabelBuildParameter)parameter).nodeLabel,
-                                    triggeredJobs, triggeringJob);
-                        }
-                        else if (parameter instanceof PredefinedBuildParameters) {
-                            // do something with predefined parameters, that could be labels in triggered jobs configuration
+                            addTriggeredJobsByLabel(
+                                    triggeredJobsByLabel,
+                                    ((NodeLabelBuildParameter) parameter).nodeLabel,
+                                    triggeredJobs,
+                                    triggeringJob);
+                        } else if (parameter instanceof PredefinedBuildParameters) {
+                            // do something with predefined parameters, that could be labels in triggered jobs
+                            // configuration
                             try {
                                 Properties p = new Properties();
-                                StringInputStream inputStream = new StringInputStream(((PredefinedBuildParameters)parameter).getProperties());
+                                StringInputStream inputStream =
+                                        new StringInputStream(((PredefinedBuildParameters) parameter).getProperties());
                                 p.load(inputStream);
-                                
+
                                 // remove all potentially unacceptable label (because of macro/token usage)
                                 Set<Object> keysSet = p.keySet();
-                                for (Iterator<Object> ite = keysSet.iterator(); ite.hasNext() ;) {
-                                    String key = (String)ite.next();
+                                for (Iterator<Object> ite = keysSet.iterator(); ite.hasNext(); ) {
+                                    String key = (String) ite.next();
                                     if (!isSupportedLabel(p.getProperty(key))) {
                                         ite.remove();
                                     }
                                 }
-                                addTriggeredJobsByPredefinedParameters(triggeredJobsByLabel, p, triggeredJobs, triggeringJob);
+                                addTriggeredJobsByPredefinedParameters(
+                                        triggeredJobsByLabel, p, triggeredJobs, triggeringJob);
                                 inputStream.close();
-                            }
-                            catch (IOException ioe) {
+                            } catch (IOException ioe) {
                                 // TODO: log exception?
                             }
                         }
                     }
-                    
+
                     // use case two: a ParameterFactories section
                     List<AbstractBuildParameterFactory> factories = config.getConfigFactories();
                     if (factories == null) {
                         continue;
                     }
-                    
+
                     for (AbstractBuildParameterFactory factory : factories) {
                         if (!(factory instanceof AllNodesForLabelBuildParameterFactory)) {
                             continue;
@@ -143,17 +143,23 @@ public class TriggeredJobsHelper {
 
                         // job is triggering other jobs based on specific label
                         // using the nodelabelparameter plugin
-                        addTriggeredJobsByLabel(triggeredJobsByLabel, ((AllNodesForLabelBuildParameterFactory) factory).nodeLabel,
-                                triggeredJobs, triggeringJob);
+                        addTriggeredJobsByLabel(
+                                triggeredJobsByLabel,
+                                ((AllNodesForLabelBuildParameterFactory) factory).nodeLabel,
+                                triggeredJobs,
+                                triggeringJob);
                     }
                 }
             }
         }
     }
-    
-    private static void addTriggeredJobsByPredefinedParameters(HashMap<Label, HashMap<AbstractProject<?,?>, TriggeredJob>> triggeredJobsByLabel,
-            Properties p, List<AbstractProject> triggeredJobs, AbstractProject<?, ?> triggeringJob) {
-        
+
+    private static void addTriggeredJobsByPredefinedParameters(
+            HashMap<Label, HashMap<AbstractProject<?, ?>, TriggeredJob>> triggeredJobsByLabel,
+            Properties p,
+            List<AbstractProject> triggeredJobs,
+            AbstractProject<?, ?> triggeringJob) {
+
         if (triggeredJobs == null) {
             return;
         }
@@ -166,7 +172,7 @@ public class TriggeredJobsHelper {
                 if (!(property instanceof ParametersDefinitionProperty)) {
                     continue;
                 }
-                ParametersDefinitionProperty pdproperties = (ParametersDefinitionProperty)property;
+                ParametersDefinitionProperty pdproperties = (ParametersDefinitionProperty) property;
 
                 // loop through the list of predefined properties of the triggeringJob
                 for (Map.Entry<Object, Object> entry : p.entrySet()) {
@@ -178,10 +184,11 @@ public class TriggeredJobsHelper {
                         // yes, and it's a Label parameter!
                         Label label = Jenkins.getInstance().getLabel(strParameterValue);
                         // let's store it in our result
-                        HashMap<AbstractProject<?, ?>, TriggeredJob> jobsTriggeredByCurrentLabel = triggeredJobsByLabel.get(label);
+                        HashMap<AbstractProject<?, ?>, TriggeredJob> jobsTriggeredByCurrentLabel =
+                                triggeredJobsByLabel.get(label);
                         if (jobsTriggeredByCurrentLabel == null) {
                             // create data structure for this label in the result if it doesn't exist yet
-                            jobsTriggeredByCurrentLabel = new HashMap<AbstractProject<?,?>, TriggeredJob>();
+                            jobsTriggeredByCurrentLabel = new HashMap<AbstractProject<?, ?>, TriggeredJob>();
                             triggeredJobsByLabel.put(label, jobsTriggeredByCurrentLabel);
                         }
                         // associate triggered job to triggering job
@@ -189,8 +196,7 @@ public class TriggeredJobsHelper {
                         if (triggeredJobData == null) {
                             triggeredJobData = new TriggeredJob(triggeredJob, triggeringJob);
                             jobsTriggeredByCurrentLabel.put(triggeredJob, triggeredJobData);
-                        }
-                        else {
+                        } else {
                             triggeredJobData.addTriggeringJob(triggeringJob);
                         }
                     }
@@ -198,50 +204,51 @@ public class TriggeredJobsHelper {
             }
         }
     }
-    
+
     static boolean isSupportedLabel(String strLabel) {
-        if (strLabel == null) { 
+        if (strLabel == null) {
             return false;
         }
         // if label contains a macro, ignore it altogether. It could be complicated, or even impossible
         // to expand the macro without being in the context of a build
         // see JENKINS-27588
-        
+
         // first look for the ${...} syntax
         int start = strLabel.indexOf("${");
         int end = strLabel.indexOf("}");
         if (0 <= start && start <= end) {
             return false;
         }
-        
+
         // then test also the $TOKEN syntax
         int index = strLabel.indexOf('$');
         if (index >= 0) {
             if (index + 1 < strLabel.length()) {
                 Character nextChar = strLabel.charAt(index + 1);
-                if (('a' <= nextChar && nextChar <= 'z')
-                 || ('A' <= nextChar && nextChar <= 'Z')
-                 || nextChar == '_') {
+                if (('a' <= nextChar && nextChar <= 'z') || ('A' <= nextChar && nextChar <= 'Z') || nextChar == '_') {
                     return false;
                 }
             }
         }
         return true;
     }
-    
-    private static void addTriggeredJobsByLabel(HashMap<Label, HashMap<AbstractProject<?,?>, TriggeredJob>> triggeredJobsByLabel,
-            String strLabel, List<AbstractProject> triggeredJobs, AbstractProject<?, ?> triggeringJob) {
+
+    private static void addTriggeredJobsByLabel(
+            HashMap<Label, HashMap<AbstractProject<?, ?>, TriggeredJob>> triggeredJobsByLabel,
+            String strLabel,
+            List<AbstractProject> triggeredJobs,
+            AbstractProject<?, ?> triggeringJob) {
 
         if (!isSupportedLabel(strLabel)) {
             return;
         }
 
         Label label = Jenkins.getInstance().getLabel(strLabel);
-        
+
         HashMap<AbstractProject<?, ?>, TriggeredJob> jobsTriggeredByCurrentLabel = triggeredJobsByLabel.get(label);
         if (jobsTriggeredByCurrentLabel == null) {
             // create data structure for this label in the result if it doesn't exist yet
-            jobsTriggeredByCurrentLabel = new HashMap<AbstractProject<?,?>, TriggeredJob>();
+            jobsTriggeredByCurrentLabel = new HashMap<AbstractProject<?, ?>, TriggeredJob>();
             triggeredJobsByLabel.put(label, jobsTriggeredByCurrentLabel);
         }
 
@@ -253,8 +260,7 @@ public class TriggeredJobsHelper {
                 if (triggeredJobData == null) {
                     triggeredJobData = new TriggeredJob(triggeredJob, triggeringJob);
                     jobsTriggeredByCurrentLabel.put(triggeredJob, triggeredJobData);
-                }
-                else {
+                } else {
                     triggeredJobData.addTriggeringJob(triggeringJob);
                 }
             }

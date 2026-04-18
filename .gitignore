@@ -1,10 +1,9 @@
-target/
-work/
 .classpath
 .project
 .settings/
-.DS_Store
-/target
-.idea/
-label-linked-jobs.iml
-
+target/
+work/
+.idea
+*.iml
+*.iws
+*.ipr

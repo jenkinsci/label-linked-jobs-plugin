@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (C) 2014 Dominique Brice
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is furnished
  * to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,18 +24,15 @@
 
 package jenkins.plugins.linkedjobs.extensions;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import jenkins.plugins.linkedjobs.actions.LabelLinkedJobsAction;
-
-import org.kohsuke.stapler.DataBoundConstructor;
-
 import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelAtomProperty;
 import hudson.model.labels.LabelAtomPropertyDescriptor;
+import java.util.Collection;
+import java.util.Collections;
+import jenkins.plugins.linkedjobs.actions.LabelLinkedJobsAction;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * One ExtensionPoint of this plugin
@@ -47,7 +44,7 @@ import hudson.model.labels.LabelAtomPropertyDescriptor;
  * @author dominiquebrice
  */
 public class LabelExtension extends LabelAtomProperty {
-    
+
     /**
      * This constructor is called by jenkins when the user saves
      * the configuration page of a given label, and has selected
@@ -56,15 +53,14 @@ public class LabelExtension extends LabelAtomProperty {
      * Checkbox displayed with <code>LabelConfigurationDescriptor.getDisplayName()</code> as a label
      */
     @DataBoundConstructor
-    public LabelExtension() {
-    }
-    
+    public LabelExtension() {}
+
     @Override
     public Collection<? extends Action> getActions(LabelAtom labelAtom) {
         // extend the left-side menu for Label with our new action/page
         return Collections.singleton(new LabelLinkedJobsAction(labelAtom));
     }
-    
+
     /**
      * Since the plugin configuration is handled globally by LabelPluginSettings,
      * the sole role of this descriptor is to define getDisplayName()
