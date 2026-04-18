@@ -1,22 +1,24 @@
 package jenkins.plugins.linkedjobs.helpers;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 public class TriggeredJobsHelperTest {
 
     @Test
     public void testIsSupportedLabel() {
-        Assert.assertTrue(TriggeredJobsHelper.isSupportedLabel("label_xyz"));
-        Assert.assertTrue(TriggeredJobsHelper.isSupportedLabel("label_xyz $ bouh"));
-        Assert.assertTrue(TriggeredJobsHelper.isSupportedLabel("label || label$"));
-        Assert.assertFalse(TriggeredJobsHelper.isSupportedLabel(null));
-        Assert.assertFalse(TriggeredJobsHelper.isSupportedLabel(" ${ MYMACRO } "));
-        Assert.assertFalse(TriggeredJobsHelper.isSupportedLabel(" ${ MYMACRO, param=22 } "));
-        Assert.assertFalse(TriggeredJobsHelper.isSupportedLabel(" $MYMACRO "));
-        Assert.assertFalse(TriggeredJobsHelper.isSupportedLabel(" $_MYMACRO "));
-        Assert.assertFalse(TriggeredJobsHelper.isSupportedLabel(" $myMACRO "));
-        Assert.assertTrue(TriggeredJobsHelper.isSupportedLabel(" $ myMacro "));
-        Assert.assertFalse(TriggeredJobsHelper.isSupportedLabel("$BUILDNUMBER"));
+        assertTrue(TriggeredJobsHelper.isSupportedLabel("label_xyz"));
+        assertTrue(TriggeredJobsHelper.isSupportedLabel("label_xyz $ bouh"));
+        assertTrue(TriggeredJobsHelper.isSupportedLabel("label || label$"));
+        assertFalse(TriggeredJobsHelper.isSupportedLabel(null));
+        assertFalse(TriggeredJobsHelper.isSupportedLabel(" ${ MYMACRO } "));
+        assertFalse(TriggeredJobsHelper.isSupportedLabel(" ${ MYMACRO, param=22 } "));
+        assertFalse(TriggeredJobsHelper.isSupportedLabel(" $MYMACRO "));
+        assertFalse(TriggeredJobsHelper.isSupportedLabel(" $_MYMACRO "));
+        assertFalse(TriggeredJobsHelper.isSupportedLabel(" $myMACRO "));
+        assertTrue(TriggeredJobsHelper.isSupportedLabel(" $ myMacro "));
+        assertFalse(TriggeredJobsHelper.isSupportedLabel("$BUILDNUMBER"));
     }
 }

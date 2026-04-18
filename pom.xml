@@ -1,54 +1,19 @@
-<!--
-The MIT License
-
-Copyright (C) 2014 Dominique Brice
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is furnished
-to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
--->
-
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>3.43</version>
+    <version>6.2152.ve00a_731c3ce9</version>
+    <relativePath />
   </parent>
 
   <artifactId>label-linked-jobs</artifactId>
-  <version>6.0.2-SNAPSHOT</version>
+  <version>${changelist}</version>
   <packaging>hpi</packaging>
   <name>Label Linked Jobs Plugin</name>
-  <description>Gives the list of jobs associated to a given atomic label</description>
-  <url>http://wiki.jenkins-ci.org/display/JENKINS/Label+Linked+Jobs+Plugin</url>
-
-  <scm>
-    <connection>scm:git:ssh://github.com/jenkinsci/label-linked-jobs-plugin.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/label-linked-jobs-plugin.git</developerConnection>
-    <url>https://github.com/jenkinsci/label-linked-jobs-plugin</url>
-    <tag>HEAD</tag>
-  </scm>
-  <licenses>
-    <license>
-      <name>MIT License</name>
-      <url>http://opensource.org/licenses/MIT</url>
-    </license>
-  </licenses>
+  <url>https://github.com/jenkinsci/label-linked-jobs/</url>
   <developers>
     <developer>
       <id>dominiquebrice</id>
@@ -56,27 +21,35 @@ THE SOFTWARE.
       <timezone>-4</timezone>
     </developer>
   </developers>
-  
+
   <properties>
-    <!-- Baseline Jenkins version you use to build and test the plugin. Users must have this version or newer to run. -->
-    <jenkins.version>2.164.3</jenkins.version>
-    <java.level>8</java.level>
+    <jenkins.baseline>2.479</jenkins.baseline>
+    <jenkins.version>${jenkins.baseline}.3</jenkins.version>
+    <changelist>999999-SNAPSHOT</changelist>
+    <spotless.check.skip>false</spotless.check.skip>
+    <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
+    <useBetaUseInjectedTests>false</useBetaUseInjectedTests>
+    <ban-commons-lang-2.skip>false</ban-commons-lang-2.skip>
+    <hpi.strictBundledArtifacts>true</hpi.strictBundledArtifacts>
   </properties>
-  
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.jenkins.tools.bom</groupId>
+        <artifactId>bom-${jenkins.baseline}.x</artifactId>
+        <version>5054.v620b_5d2b_d5e6</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
-      <!--  JENKINS-27588, need to define dependency on this plugin to be able -->
-      <!--  to use its classes detect its configuration in jobs -->
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>parameterized-trigger</artifactId>
-      <version>2.22</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>1.14</version>
+      <!-- Version managed by BOM -->
       <optional>true</optional>
     </dependency>
     <dependency>
@@ -84,55 +57,14 @@ THE SOFTWARE.
       <!--  to use its classes detect its configuration in jobs -->
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>nodelabelparameter</artifactId>
-      <version>1.5.0</version>
+      <version>1.12.0</version>
       <optional>true</optional>
     </dependency>
     <dependency>
-      <!-- SECURITY-595 -->
-      <!-- https://www.jenkins.io/doc/developer/handling-requests/stapler-accessible-type/ -->
-      <groupId>io.jenkins.stapler</groupId>
-      <artifactId>jenkins-stapler-support</artifactId>
-      <version>1.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler</artifactId>
-      <version>1.256</version>
-    </dependency>
-    <dependency>
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>json-lib</artifactId>
-      <version>2.4-jenkins-2</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.6</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.localizer</groupId>
-      <artifactId>localizer</artifactId>
-      <version>1.24</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-fileupload</groupId>
-      <artifactId>commons-fileupload</artifactId>
-      <version>1.3.1-jenkins-2</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <version>2.6</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-collections</groupId>
-      <artifactId>commons-collections</artifactId>
-      <version>3.2.2</version>
-    </dependency>
-    <dependency>
-      <groupId>com.jcraft</groupId>
-      <artifactId>jzlib</artifactId>
-      <version>1.1.3-kohsuke-1</version>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>parameterized-trigger</artifactId>
+      <!-- Version managed by BOM -->
+      <optional>true</optional>
     </dependency>
   </dependencies>
 
@@ -151,26 +83,4 @@ THE SOFTWARE.
       <url>https://repo.jenkins-ci.org/public/</url>
     </pluginRepository>
   </pluginRepositories>
-  
-  <build>
-    <plugins>
-      <!-- section to avoid trouble while uploading -->
-      <!-- see http://jenkins-ci.361315.n4.nabble.com/Can-t-maven-release-my-plugin-401-on-upload-to-repo-jenkins-ci-org-td4796955.html -->
-      <!-- and https://issues.jenkins-ci.org/browse/INFRA-588 -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <version>2.6</version>
-        <dependencies>
-          <dependency>
-            <groupId>org.apache.maven.wagon</groupId>
-            <artifactId>wagon-http</artifactId>
-            <version>2.10</version>
-            <type>jar</type>
-          </dependency>
-        </dependencies>
-      </plugin>
-    </plugins>
-  </build>
-
 </project>

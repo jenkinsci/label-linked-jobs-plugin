@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (C) 2014, 2015 Dominique Brice
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is furnished
  * to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,14 +24,13 @@
 
 package jenkins.plugins.linkedjobs.model;
 
-import java.util.ArrayList;
-
-import jenkins.model.Jenkins;
-import jenkins.plugins.linkedjobs.actions.LabelLinkedJobsAction;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 import hudson.slaves.Cloud;
 import hudson.util.VersionNumber;
+import java.util.ArrayList;
+import jenkins.model.Jenkins;
+import jenkins.plugins.linkedjobs.actions.LabelLinkedJobsAction;
 
 public class LabelAtomData extends AbstractJobsGroup implements Comparable<LabelAtomData> {
 
@@ -48,33 +47,34 @@ public class LabelAtomData extends AbstractJobsGroup implements Comparable<Label
     public void add(Node n) {
         nodes.add(n);
     }
-    
-    //************************************************
+
+    // ************************************************
     // functions used to render display in index.jelly
-    //************************************************
-    
+    // ************************************************
+
     public String getDescription() {
         // configurable description for LabelAtom was implemented in Jenkins core v1.580
-        if (Jenkins.getVersion() != null && !Jenkins.getVersion().isOlderThan(new VersionNumber("1.580"))) {
-            return labelAtom.getDescription() != null && labelAtom.getDescription().trim().length() > 0 ? labelAtom.getDescription() : null;
-        }
-        else {
+        VersionNumber version = Jenkins.getVersion();
+        if (version != null && !version.isOlderThan(new VersionNumber("1.580"))) {
+            String description = labelAtom.getDescription();
+            return description != null && !description.trim().isEmpty() ? description : null;
+        } else {
             return null;
         }
     }
-    
+
     public String getLabel() {
         return labelAtom.getDisplayName();
     }
-    
+
     public String getLabelURL() {
         return labelAtom.getUrl();
     }
-    
+
     public int getNodesCount() {
         return nodes.size();
     }
-    
+
     // JENKINS-32445
     // return the number of clouds that can provision this atomic label
     public int getCloudsCount() {
@@ -86,7 +86,7 @@ public class LabelAtomData extends AbstractJobsGroup implements Comparable<Label
         }
         return result;
     }
-    
+
     public boolean getPluginActiveForLabel() {
         for (hudson.model.Action a : labelAtom.getActions()) {
             if (a instanceof LabelLinkedJobsAction) {
@@ -103,12 +103,12 @@ public class LabelAtomData extends AbstractJobsGroup implements Comparable<Label
     public int compareTo(LabelAtomData o) {
         return this.labelAtom.compareTo(o.labelAtom);
     }
-    
+
     @Override
     public boolean equals(Object o) {
-        return (o instanceof LabelAtomData) && this.compareTo((LabelAtomData)o) == 0;
+        return (o instanceof LabelAtomData) && this.compareTo((LabelAtomData) o) == 0;
     }
-    
+
     @Override
     public int hashCode() {
         return labelAtom.hashCode();
