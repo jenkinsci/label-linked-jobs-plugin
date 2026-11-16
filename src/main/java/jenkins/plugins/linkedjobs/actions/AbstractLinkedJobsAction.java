@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (C) 2014, 2015 Dominique Brice
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is furnished
  * to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,22 +24,21 @@
 
 package jenkins.plugins.linkedjobs.actions;
 
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.Label;
+import hudson.model.TopLevelItem;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import jenkins.model.Jenkins;
 import jenkins.plugins.linkedjobs.helpers.TriggeredJobsHelper;
 import jenkins.plugins.linkedjobs.model.JobsGroup;
 import jenkins.plugins.linkedjobs.model.TriggeredJob;
 import jenkins.plugins.linkedjobs.settings.GlobalSettings;
-import hudson.model.AbstractProject;
-import hudson.model.Action;
-import hudson.model.Label;
-import hudson.model.TopLevelItem;
 
 public abstract class AbstractLinkedJobsAction implements Action {
-    
+
     public String getIconFileName() {
         return "search.png";
     }
@@ -48,16 +47,16 @@ public abstract class AbstractLinkedJobsAction implements Action {
     public String getDisplayName() {
         return "Linked Jobs";
     }
-    
+
     // relative URL used for the additional link in the left-side menu
     public String getUrlName() {
         return "linkedjobs";
     }
-    
+
     public boolean getDetailedView() {
         return GlobalSettings.get().getDetailedView();
     }
-    
+
     protected List<JobsGroup> buildJobsGroups() {
         HashMap<Label, JobsGroup> tmpResult = new HashMap<Label, JobsGroup>();
 
@@ -78,10 +77,10 @@ public abstract class AbstractLinkedJobsAction implements Action {
                 matchingJobGroup.addJob(job);
             }
         }
-        
+
         // then browse list of triggered jobs
-        HashMap<Label, HashMap<AbstractProject<?,?>, TriggeredJob>> triggeredJobsByLabel =
-                new HashMap<Label, HashMap<AbstractProject<?,?>, TriggeredJob>>();
+        HashMap<Label, HashMap<AbstractProject<?, ?>, TriggeredJob>> triggeredJobsByLabel =
+                new HashMap<Label, HashMap<AbstractProject<?, ?>, TriggeredJob>>();
         TriggeredJobsHelper.populateTriggeredJobs(triggeredJobsByLabel);
         for (Map.Entry<Label, HashMap<AbstractProject<?, ?>, TriggeredJob>> entry : triggeredJobsByLabel.entrySet()) {
             Label label = entry.getKey();
@@ -95,9 +94,10 @@ public abstract class AbstractLinkedJobsAction implements Action {
                 matchingJobGroup.addTriggeredJobs(entry.getValue().values());
             }
         }
-        
+
         // then browse list of jobs with a Label parameter with a default value
-        HashMap<Label, List<AbstractProject<?,?>>> jobsByDefaultLabel = new HashMap<Label, List<AbstractProject<?,?>>>();
+        HashMap<Label, List<AbstractProject<?, ?>>> jobsByDefaultLabel =
+                new HashMap<Label, List<AbstractProject<?, ?>>>();
         TriggeredJobsHelper.populateJobsWithLabelDefaultValue(jobsByDefaultLabel);
         for (Map.Entry<Label, List<AbstractProject<?, ?>>> entry : jobsByDefaultLabel.entrySet()) {
             Label label = entry.getKey();
@@ -113,7 +113,8 @@ public abstract class AbstractLinkedJobsAction implements Action {
 
         return buildResult(tmpResult);
     }
-    
+
     protected abstract List<JobsGroup> buildResult(HashMap<Label, JobsGroup> tmpResult);
+
     protected abstract boolean isLabelRelevant(Label jobLabel);
 }

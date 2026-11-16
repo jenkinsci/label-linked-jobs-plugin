@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (C) 2014, 2015 Dominique Brice
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is furnished
  * to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,10 +27,8 @@ package jenkins.plugins.linkedjobs.model;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.slaves.Cloud;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import jenkins.model.Jenkins;
 
 /**
@@ -48,7 +46,7 @@ public class JobsGroup extends AbstractJobsGroup implements Comparable<JobsGroup
         super();
 
         label = l;
-        
+
         applicableNodes = new ArrayList<Node>();
         // list all nodes that could run jobs with this particular label
         // this code is strongly inspired from what is found in hudson.model.Label.getNodes()
@@ -63,11 +61,11 @@ public class JobsGroup extends AbstractJobsGroup implements Comparable<JobsGroup
             }
         }
     }
-    
-    //************************************************
+
+    // ************************************************
     // functions used to render display in index.jelly
-    //************************************************
-    
+    // ************************************************
+
     public String getLabel() {
         return label.getDisplayName();
     }
@@ -75,15 +73,15 @@ public class JobsGroup extends AbstractJobsGroup implements Comparable<JobsGroup
     public String getLabelURL() {
         return label.getUrl();
     }
-    
+
     public List<Node> getNodes() {
         return applicableNodes;
     }
-    
+
     public boolean isSingleNode() {
         return applicableNodes.size() == 1;
     }
-    
+
     // clouds that can provision this label (and thus jobs in this group)
     public List<Cloud> getProvisioningClouds() {
         List<Cloud> provisioningClouds = new ArrayList<Cloud>();
@@ -95,19 +93,19 @@ public class JobsGroup extends AbstractJobsGroup implements Comparable<JobsGroup
         return provisioningClouds;
     }
 
-    //*********************************
+    // *********************************
     // implements Comparable<JobsGroup>
-    //*********************************
+    // *********************************
     @Override
     public int compareTo(JobsGroup o) {
         return this.label.compareTo(o.label);
     }
-    
+
     @Override
     public boolean equals(Object o) {
-        return (o instanceof JobsGroup) && this.compareTo((JobsGroup)o) == 0;
+        return (o instanceof JobsGroup) && this.compareTo((JobsGroup) o) == 0;
     }
-    
+
     @Override
     public int hashCode() {
         return label.hashCode();

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (C) 2014, 2015 Dominique Brice
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is furnished
  * to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,12 +24,10 @@
 
 package jenkins.plugins.linkedjobs.model;
 
-import jenkins.model.Jenkins;
-
-import org.kohsuke.stapler.export.Exported;
-
 import hudson.model.Computer;
 import hudson.model.Node;
+import jenkins.model.Jenkins;
+import org.kohsuke.stapler.export.Exported;
 
 public class NodeData extends AbstractJobsGroup implements Comparable<NodeData> {
 
@@ -39,28 +37,26 @@ public class NodeData extends AbstractJobsGroup implements Comparable<NodeData> 
         super();
         node = n;
     }
-    
-    //************************************************
+
+    // ************************************************
     // functions used to render display in index.jelly
-    //************************************************
-    
+    // ************************************************
+
     @Exported
     public String getName() {
         return node.getDisplayName();
     }
-    
+
     @Exported
     public String getLabelURL() {
         return node.getSelfLabel().getUrl();
     }
-    
+
     @Exported
     public String getNodeURL() {
-        Computer c = Jenkins.get().getComputer(node.getNodeName());
-        if (c != null) {
-            return c.getUrl();
-        }
-        return null;
+        Jenkins jenkins = Jenkins.get();
+        Computer computer = jenkins.getComputer(node.getNodeName());
+        return computer != null ? computer.getUrl() : null;
     }
 
     /************************************
@@ -70,12 +66,12 @@ public class NodeData extends AbstractJobsGroup implements Comparable<NodeData> 
     public int compareTo(NodeData o) {
         return this.getName().compareTo(o.getName());
     }
-    
+
     @Override
     public boolean equals(Object o) {
-        return (o instanceof NodeData) && this.compareTo((NodeData)o) == 0;
+        return (o instanceof NodeData) && this.compareTo((NodeData) o) == 0;
     }
-    
+
     @Override
     public int hashCode() {
         return getName().hashCode();

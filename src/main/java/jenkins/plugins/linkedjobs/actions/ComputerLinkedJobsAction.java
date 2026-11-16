@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (C) 2014, 2015 Dominique Brice
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is furnished
  * to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,19 +24,18 @@
 
 package jenkins.plugins.linkedjobs.actions;
 
+import hudson.model.Computer;
+import hudson.model.Label;
+import hudson.model.ModelObject;
+import hudson.model.Node;
+import hudson.model.labels.LabelAtom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-
 import jenkins.plugins.linkedjobs.model.JobsGroup;
 import jenkins.plugins.linkedjobs.settings.GlobalSettings;
-import hudson.model.ModelObject;
-import hudson.model.Computer;
-import hudson.model.Label;
-import hudson.model.Node;
-import hudson.model.labels.LabelAtom;
 
 /**
  * For each Computer, Jenkins associates an object of this class to a Linked Jobs page
@@ -48,7 +47,7 @@ import hudson.model.labels.LabelAtom;
  *
  */
 public class ComputerLinkedJobsAction extends AbstractLinkedJobsAction {
-    
+
     /**
      * The computer/node associated to this action
      */
@@ -63,15 +62,15 @@ public class ComputerLinkedJobsAction extends AbstractLinkedJobsAction {
     public Node getNode() {
         return computer.getNode();
     }
-    
+
     public ModelObject getOwner() {
         return computer;
     }
-    
+
     public boolean getShowSingleNodeJobs() {
         return GlobalSettings.get().getShowSingleNodeJobs();
     }
-    
+
     public List<LabelAtom> getNodeLabels() {
         ArrayList<LabelAtom> result = new ArrayList<LabelAtom>();
         // list only static labels, not dynamic labels nor the node's self-label
@@ -92,7 +91,7 @@ public class ComputerLinkedJobsAction extends AbstractLinkedJobsAction {
         }
         return result;
     }
-    
+
     // this function finds all jobs that can run only on this node because
     // of labels (mis-)configuration, thus with a potential non-redundancy
     // issue
@@ -107,20 +106,20 @@ public class ComputerLinkedJobsAction extends AbstractLinkedJobsAction {
 
         return groups;
     }
-    
+
     // this function finds all jobs that could run on this node,
     // based on labels configuration, and groups them by label
     public List<JobsGroup> getLinkedJobs() {
         return buildJobsGroups();
     }
-    
+
     protected List<JobsGroup> buildResult(HashMap<Label, JobsGroup> tmpResult) {
         ArrayList<JobsGroup> result = new ArrayList<JobsGroup>(tmpResult.size());
         result.addAll(tmpResult.values());
         Collections.sort(result);
         return result;
     }
-    
+
     protected boolean isLabelRelevant(Label jobLabel) {
         // can jobs configured with this label run on this node?
         return jobLabel != null && jobLabel.matches(computer.getNode());
