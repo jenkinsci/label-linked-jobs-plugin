@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (C) 2014, 2015 Dominique Brice
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is furnished
  * to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,16 +24,15 @@
 
 package jenkins.plugins.linkedjobs.actions;
 
+import hudson.model.Label;
+import hudson.model.labels.LabelAtom;
+import hudson.slaves.Cloud;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-
 import jenkins.model.Jenkins;
 import jenkins.plugins.linkedjobs.model.JobsGroup;
-import hudson.model.Label;
-import hudson.model.labels.LabelAtom;
-import hudson.slaves.Cloud;
 
 /**
  * For each Label, Jenkins associates an object of this class to a Linked Jobs page.
@@ -45,7 +44,7 @@ import hudson.slaves.Cloud;
  *
  */
 public class LabelLinkedJobsAction extends AbstractLinkedJobsAction {
-    
+
     /**
      * The label associated to this action
      */
@@ -65,7 +64,7 @@ public class LabelLinkedJobsAction extends AbstractLinkedJobsAction {
     public LabelAtom getLabel() {
         return this.label;
     }
-    
+
     // clouds that can provision this atomic label
     public List<Cloud> getProvisioningClouds() {
         List<Cloud> provisioningClouds = new ArrayList<Cloud>();
@@ -76,7 +75,7 @@ public class LabelLinkedJobsAction extends AbstractLinkedJobsAction {
         }
         return provisioningClouds;
     }
-    
+
     // util function, because List doesn't have a function
     // to get its size starting with 'get', so no way to call it
     // directly in index.jelly
@@ -88,13 +87,13 @@ public class LabelLinkedJobsAction extends AbstractLinkedJobsAction {
      * This function retrieves all jobs existing on this jenkins instance and
      * group them by "assigned label", keeping only such labels that contains
      * the particular label of this LabelLinkedJobsAction instance
-     * 
+     *
      * @return a list of jobs grouped by assigned label
      */
     public List<JobsGroup> getJobsGroups() {
         return buildJobsGroups();
     }
-    
+
     protected List<JobsGroup> buildResult(HashMap<Label, JobsGroup> tmpResult) {
         ArrayList<JobsGroup> result = new ArrayList<JobsGroup>(tmpResult.size());
         // keep track from where we must finally sort the result
@@ -110,7 +109,7 @@ public class LabelLinkedJobsAction extends AbstractLinkedJobsAction {
         Collections.sort(result.subList(fromIndex, result.size()));
         return result;
     }
-    
+
     protected boolean isLabelRelevant(Label jobLabel) {
         // condition for a job to be listed is simply to use the label,
         // regardless of the actual meaning of the expression
