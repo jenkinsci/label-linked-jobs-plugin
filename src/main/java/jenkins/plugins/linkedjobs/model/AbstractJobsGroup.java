@@ -28,11 +28,10 @@ import hudson.model.AbstractProject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
-@ExportedBean(defaultVisibility=2)
+@ExportedBean(defaultVisibility = 2)
 public abstract class AbstractJobsGroup {
 
     // list of jobs functionally tied to this label/node

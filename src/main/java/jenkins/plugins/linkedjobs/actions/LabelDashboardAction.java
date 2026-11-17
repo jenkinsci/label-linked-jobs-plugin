@@ -114,39 +114,37 @@ public class LabelDashboardAction implements RootAction {
 
     @ExportedBean
     public static class Data {
-      private final List<LabelAtomData> labels;
-      private final Collection<NodeData> nodes;
-      private Data(List<LabelAtomData> labels, Collection<NodeData> nodes) {
-        this.labels = labels;
-        this.nodes = nodes;
-      }
-      
-      @Exported(visibility=1)
-      public List<LabelAtomData> getLabels()
-      {
-        return labels;
-      }
+        private final List<LabelAtomData> labels;
+        private final Collection<NodeData> nodes;
 
-      @Exported(visibility=1)
-      public Collection<NodeData> getNodes()
-      {
-        return nodes;
-      }
+        private Data(List<LabelAtomData> labels, Collection<NodeData> nodes) {
+            this.labels = labels;
+            this.nodes = nodes;
+        }
 
+        @Exported(visibility = 1)
+        public List<LabelAtomData> getLabels() {
+            return labels;
+        }
+
+        @Exported(visibility = 1)
+        public Collection<NodeData> getNodes() {
+            return nodes;
+        }
     }
-    
+
     public final Api getApi() {
-      Jenkins.get().checkPermission(Jenkins.READ);
-      getRefresh();
-      List<LabelAtomData> labels = getLabelsData();
-      Collection<NodeData> nodes = getNodesData();
-      if (nodes.size() == 0 || labels.size() == 0) {
-          getRefresh();
-          nodes = getNodesData();
-          labels = getLabelsData();
-      }
-      
-      return new Api(new Data(labels, nodes));
+        Jenkins.get().checkPermission(Jenkins.READ);
+        getRefresh();
+        List<LabelAtomData> labels = getLabelsData();
+        Collection<NodeData> nodes = getNodesData();
+        if (nodes.size() == 0 || labels.size() == 0) {
+            getRefresh();
+            nodes = getNodesData();
+            labels = getLabelsData();
+        }
+
+        return new Api(new Data(labels, nodes));
     }
 
     /**
