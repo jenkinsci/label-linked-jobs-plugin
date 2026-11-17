@@ -40,7 +40,7 @@ import jenkins.plugins.linkedjobs.settings.GlobalSettings;
 public abstract class AbstractLinkedJobsAction implements Action {
 
     public String getIconFileName() {
-        return "search.png";
+        return "symbol-search-outline plugin-ionicons-api";
     }
 
     // name of the additional link in the left-side menu

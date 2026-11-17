@@ -1,0 +1,63 @@
+.llj-table {
+  width: fit-content;
+  margin-bottom: 0;
+}
+
+.llj-table > thead > tr > th:first-of-type,
+.llj-table > tbody > tr > td:first-of-type {
+  padding-left: 20px!important;
+}
+
+
+.llj-table > thead > tr > th:last-of-type,
+.llj-table > tbody > tr > td:last-of-type {
+  padding-right: 20px!important;
+}
+
+.llj-table > tbody > tr > td.label {
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.right {
+  text-align: right!important;
+}
+
+.llj-single-node-jobs,
+.llj-jobs_list__container {
+  display: flex;
+  gap: 1rem;
+  flex-direction: column;
+}
+
+.llj-jobs_list__container:has(*) {
+  margin-top: 1rem;
+}
+
+.llj__job_list {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.llj-dashboard {
+  max-width: 1800px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.llj-dashboard h2,
+.llj-dashboard .jenkins-alert {
+  margin-bottom: 1rem;
+}
+
+.llj-dashboard .jenkins-icon-size {
+  display: none;
+}
+
+.llj-dashboard .jenkins-table {
+  margin-bottom: 1px;
+}
