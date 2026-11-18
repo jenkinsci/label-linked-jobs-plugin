@@ -31,10 +31,11 @@ This plugin can list all the labels and related jobs.
 
 ### Endpoint
 
-The plugin exposes a REST endpoint that returns information about Jenkins labels and their related jobs.
+The plugin exposes a REST endpoint that returns information about Jenkins labels, nodes and their related jobs.
+The response format is selected by the URL suffix: `json` or `xml`.
 
 ```http
-GET http://localhost:8080/labelsdashboard/labelsData
+GET http://localhost:8080/labelsdashboard/api/json
 ```
 
 ### Example request
@@ -43,35 +44,51 @@ Run this command against a Jenkins instance where the Label Linked Jobs plugin i
 
 ```bash
 curl -u USERNAME:API_TOKEN \
-  "http://localhost:8080/labelsdashboard/labelsData"
+  "http://localhost:8080/labelsdashboard/api/json"
 ```
 
 Replace `USERNAME` and `API_TOKEN` with your Jenkins username and API token. The Jenkins instance must be accessible at the specified URL.
 
 ### Response
 
-The endpoint returns a JSON array containing information about Jenkins labels.
+The endpoint returns a JSON object with the `labels` and `nodes` arrays.
 
 Example response:
 
 ```json
-[
-  {
-    "label": "java",
-    "description": "",
-    "cloudsCount": 0,
-    "nodesCount": 1,
-    "jobs": [],
-    "jobsCount": 0,
-    "hasMoreThanOneJob": false,
-    "jobsWithLabelDefaultValue": [],
-    "jobsWithLabelDefaultValueCount": 0,
-    "triggeredJobs": [],
-    "triggeredJobsCount": 0,
-    "pluginActiveForLabel": false,
-    "labelURL": "label/java/"
-  }
-]
+{
+  "labels": [
+    {
+      "cloudsCount": 0,
+      "description": "",
+      "hasMoreThanOneJob": false,
+      "jobs": [],
+      "jobsCount": 0,
+      "jobsWithLabelDefaultValue": [],
+      "jobsWithLabelDefaultValueCount": 0,
+      "label": "java",
+      "labelURL": "label/java/",
+      "nodesCount": 1,
+      "pluginActiveForLabel": false,
+      "triggeredJobs": [],
+      "triggeredJobsCount": 0
+    }
+  ],
+  "nodes": [
+    {
+      "hasMoreThanOneJob": false,
+      "jobs": [],
+      "jobsCount": 0,
+      "jobsWithLabelDefaultValue": [],
+      "jobsWithLabelDefaultValueCount": 0,
+      "triggeredJobs": [],
+      "triggeredJobsCount": 0,
+      "labelURL": "label/master/",
+      "name": "Jenkins",
+      "nodeURL": "computer/(master)/"
+    }
+  ]
+}
 ```
 
 The values shown are illustrative. Actual values depend on the Jenkins configuration.
