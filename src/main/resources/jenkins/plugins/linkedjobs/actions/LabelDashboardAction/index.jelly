@@ -143,8 +143,8 @@ THE SOFTWARE.
                   <div>Orphaned triggered jobs (triggering job(s)):
                     <div class="llj__job_list">
                       <j:forEach var="triggeredjob" items="${orphanedTriggeredJobs}" varStatus="outerLoopStatus">
-                        <span>
-                          <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a>&#160;(<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}" varStatus="innerLoopStatus">
+                        <span class="llj__job_list--item">
+                          <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a> (<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}" varStatus="innerLoopStatus">
                           <a href="${triggeringJob.absoluteUrl}">${triggeringJob.name}</a>
                           </j:forEach>)
                         </span>
@@ -199,8 +199,8 @@ THE SOFTWARE.
                             Triggered jobs (triggering job(s)):
                             <div class="llj__job_list">
                               <j:forEach var="triggeredjob" items="${triggeredJobs}">
-                                <span>
-                                <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a>&#160;(<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}">
+                                <span class="llj__job_list--item">
+                                <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a> (<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}">
                                     <a href="${triggeringJob.absoluteUrl}">${triggeringJob.name}</a>
                                   </j:forEach>)
                                 </span>

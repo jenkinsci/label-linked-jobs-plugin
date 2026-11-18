@@ -42,6 +42,10 @@
   flex-wrap: wrap;
 }
 
+.llj__job_list--item {
+  white-space: nowrap
+}
+
 .llj-dashboard {
   max-width: 1800px;
   display: flex;
