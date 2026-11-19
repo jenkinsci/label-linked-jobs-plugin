@@ -66,7 +66,7 @@ public class LabelDashboardAction implements RootAction {
     private HashMap<Label, List<AbstractProject<?, ?>>> m_jobsByDefaultLabel;
 
     public String getIconFileName() {
-        return "attribute.png";
+        return "symbol-pricetags-outline plugin-ionicons-api";
     }
 
     public String getDisplayName() {
