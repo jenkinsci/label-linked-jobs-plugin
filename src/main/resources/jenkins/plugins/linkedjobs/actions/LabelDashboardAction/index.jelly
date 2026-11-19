@@ -31,7 +31,7 @@ THE SOFTWARE.
 
   <l:layout title="${it.displayName}">
     <st:include it="${app}" page="sidepanel.jelly"/>
-    <st:adjunct includes="jenkins.plugins.linkedjobs.actions.LabelDashboardAction.styles" />
+    <st:adjunct includes="jenkins.plugins.linkedjobs.actions.styles" />
 
     <l:main-panel>
       <div class="llj-dashboard">
@@ -130,7 +130,7 @@ THE SOFTWARE.
                   <t:projectView jobs="${orphanedJobs}"/>
                 </j:if>
                 <j:if test="${!it.dashboardOrphanedJobsDetailedView}">
-                  <div class="llj__job_list">
+                  <div class="llj__list">
                     <j:forEach var="job" items="${orphanedJobs}">
                       <span><a href="${job.absoluteUrl}">${job.name}</a></span>
                     </j:forEach>
@@ -141,9 +141,9 @@ THE SOFTWARE.
               <div class="llj-jobs_list__container">
                 <j:if test="${!empty(orphanedTriggeredJobs)}">
                   <div>Orphaned triggered jobs (triggering job(s)):
-                    <div class="llj__job_list">
+                    <div class="llj__list">
                       <j:forEach var="triggeredjob" items="${orphanedTriggeredJobs}" varStatus="outerLoopStatus">
-                        <span class="llj__job_list--item">
+                        <span class="llj__list--item">
                           <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a> (<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}" varStatus="innerLoopStatus">
                           <a href="${triggeringJob.absoluteUrl}">${triggeringJob.name}</a>
                           </j:forEach>)
@@ -156,7 +156,7 @@ THE SOFTWARE.
                 <j:if test="${!empty(orphanedDefaultValueJobs)}">
                   <div>
                   Orphaned jobs, considering their default Label parameter value:
-                    <div class="llj__job_list">
+                    <div class="llj__list">
                       <j:forEach var="job" items="${orphanedDefaultValueJobs}">
                         <a href="${job.absoluteUrl}">${job.name}</a>
                       </j:forEach>
@@ -178,14 +178,14 @@ THE SOFTWARE.
               </j:when>
               <j:otherwise>
                 <div class="jenkins-alert jenkins-alert-warning">The following job(s) can run on only one agent because of label (mis-)configuration, so you may have trouble if their dedicated agent goes down.</div>
-                <div class="llj-single-node-jobs">
+                <div class="llj-card-list">
                   <j:forEach var="node" items="${singleNodeJobsByNode}">
                     <l:card title="${node.name}" expandable="${rootURL}/${node.nodeURL}">
                       <j:if test="${it.dashboardOrphanedJobsDetailedView}">
                         <t:projectView jobs="${node.jobs}"/>
                       </j:if>
                       <j:if test="${!it.dashboardOrphanedJobsDetailedView}">
-                        <div class="llj__job_list">
+                        <div class="llj__list">
                           <j:forEach var="job" items="${node.jobs}" varStatus="loopStatus">
                             <a href="${job.absoluteUrl}">${job.name}</a>
                           </j:forEach>
@@ -197,9 +197,9 @@ THE SOFTWARE.
                         <j:if test="${!empty(triggeredJobs)}">
                           <div>
                             Triggered jobs (triggering job(s)):
-                            <div class="llj__job_list">
+                            <div class="llj__list">
                               <j:forEach var="triggeredjob" items="${triggeredJobs}">
-                                <span class="llj__job_list--item">
+                                <span class="llj__list--item">
                                 <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a> (<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}">
                                     <a href="${triggeringJob.absoluteUrl}">${triggeringJob.name}</a>
                                   </j:forEach>)
@@ -212,7 +212,7 @@ THE SOFTWARE.
                         <j:set var="jobsWithLabelDefaultValue" value="${node.jobsWithLabelDefaultValue}" />
                         <j:if test="${!empty(jobsWithLabelDefaultValue)}">
                           <div>By default value:
-                            <div class="llj__job_list">
+                            <div class="llj__list">
                               <j:forEach var="job" items="${jobsWithLabelDefaultValue}">
                                 <a href="${job.absoluteUrl}">${job.name}</a>
                               </j:forEach>
@@ -242,7 +242,7 @@ THE SOFTWARE.
                   <t:projectView jobs="${labellessJobs}"/>
                 </j:if>
                 <j:if test="${!it.dashboardOrphanedJobsDetailedView}">
-                  <div class="llj__job_list">
+                  <div class="llj__list">
                     <j:forEach var="job" items="${labellessJobs}">
                       <a href="${job.absoluteUrl}" class="model-link">${job.name}</a>
                     </j:forEach>

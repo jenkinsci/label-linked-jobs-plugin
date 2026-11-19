@@ -66,6 +66,10 @@ public class JobsGroup extends AbstractJobsGroup implements Comparable<JobsGroup
     // functions used to render display in index.jelly
     // ************************************************
 
+    public boolean isAtom() {
+        return label.isAtom();
+    }
+
     public String getLabel() {
         return label.getDisplayName();
     }

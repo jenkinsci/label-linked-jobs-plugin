@@ -25,7 +25,7 @@
   text-align: right!important;
 }
 
-.llj-single-node-jobs,
+.llj-card-list,
 .llj-jobs_list__container {
   display: flex;
   gap: 1rem;
@@ -36,14 +36,24 @@
   margin-top: 1rem;
 }
 
-.llj__job_list {
+.llj-jobs_list__container--top {
+    margin-top: 0;
+}
+
+.llj__list {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
 }
 
-.llj__job_list--item {
+.llj__list--item {
   white-space: nowrap
+}
+
+.llj__list--agent {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 .llj-dashboard {
@@ -62,6 +72,7 @@
   display: none;
 }
 
-.llj-dashboard .jenkins-table {
+.llj-dashboard .jenkins-table,
+.llj-dashboard .jenkins-notice{
   margin-bottom: 1px;
 }

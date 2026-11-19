@@ -31,117 +31,142 @@ THE SOFTWARE.
     
   <l:layout title="${it.title}">
     <st:include it="${it.owner}" page="sidepanel.jelly"/>
+    <st:adjunct includes="jenkins.plugins.linkedjobs.actions.styles" />
 
     <l:main-panel>
-      
-      <h2>${it.owner.displayName}'s labels</h2>
-      <j:set var="labels" value="${it.nodeLabels}" />
-      <j:choose>
-        <j:when test="${empty(labels)}">
-          None.
-        </j:when>
-        <j:otherwise>
-          <j:forEach var="label" items="${labels}">
-            <a href="${rootURL}/${label.url}">${label.displayName}</a>&#160;
-          </j:forEach>
-        </j:otherwise>
-      </j:choose>
-      <br/><br/>
-      
-      <h2>Linked jobs</h2>
-      <j:set var="groups" value="${it.linkedJobs}" />
-      <j:choose>
-        <j:when test="${empty(groups)}">
-          There are no jobs that are linked to this node, based on label configuration.
-        </j:when>
-        <j:otherwise>
-
-          <j:forEach var="group" items="${groups}">
-            <h3>Job<j:if test="${group.hasMoreThanOneJob}">s</j:if> configured with <a href="${rootURL}/${group.labelURL}">${group.label}</a></h3>
-            
-            <j:if test="${it.detailedView  &amp;&amp; !empty(group.jobs)}">
-              <t:projectView jobs="${group.jobs}"/>
-              <br/><br/>
-            </j:if>
-            <j:if test="${!it.detailedView  &amp;&amp; !empty(group.jobs)}">
-              <j:forEach var="job" items="${group.jobs}">
-                <a href="${job.absoluteUrl}">${job.name}</a>&#160;
-              </j:forEach>
-              <br/><br/>
-            </j:if>
-            
-            <j:if test="${!empty(group.triggeredJobs)}">
-              Triggered jobs (triggering job(s)):&#160;
-              <j:forEach var="triggeredjob" items="${group.triggeredJobs}" varStatus="outerLoopStatus">
-                <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a>&#160;(<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}" varStatus="innerLoopStatus">
-                  <a href="${triggeringJob.absoluteUrl}">${triggeringJob.name}</a>
-                  <j:if test="${!innerLoopStatus.last}">,&#160;</j:if>
-                </j:forEach>)<j:if test="${!outerLoopStatus.last}">,&#160;</j:if>
-              </j:forEach>
-              <br/><br/>
-            </j:if>
-
-            <j:if test="${!empty(group.jobsWithLabelDefaultValue)}">
-              Job(s) using this label as default value for a Label parameter:&#160;
-              <j:forEach var="job" items="${group.jobsWithLabelDefaultValue}" varStatus="loopStatus">
-                <a href="${job.absoluteUrl}">${job.name}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
-              </j:forEach>
-              <br/><br/>
-            </j:if>
-
-          </j:forEach>
-
-        </j:otherwise>
-      </j:choose>
-        
-      <j:if test="${it.showSingleNodeJobs}">
-        
-        <br/><br/><h2>Exclusive jobs</h2>
-        <j:set var="exclusiveGroups" value="${it.getExclusiveJobs(groups)}" />
-        <j:choose>
-          <j:when test="${empty(exclusiveGroups)}">
-            There are no single-node jobs that can run only on this node. Well done with your configuration!
-          </j:when>
-          <j:otherwise>
-            The following job(s) can run only on this node because of label (mis-)configuration, so you may have trouble if it goes down.
-            <j:forEach var="group" items="${exclusiveGroups}">
-              <h3>Job<j:if test="${group.hasMoreThanOneJob}">s</j:if> configured with <a href="${rootURL}/${group.labelURL}">${group.label}</a></h3>
-              
-              <j:if test="${it.detailedView  &amp;&amp; !empty(group.jobs)}">
-                <t:projectView jobs="${group.jobs}"/>
-                <br/><br/>
-              </j:if>
-              <j:if test="${!it.detailedView  &amp;&amp; !empty(group.jobs)}">
-                <j:forEach var="job" items="${group.jobs}">
-                  <a href="${job.absoluteUrl}">${job.name}</a>&#160;
+      <h2>Labels of ${it.owner.displayName}</h2>
+      <div class="llj-dashboard">
+        <div>
+          <j:set var="labels" value="${it.nodeLabels}" />
+          <j:choose>
+            <j:when test="${empty(labels)}">
+              <l:notice title="This agent has no labels configured, so no jobs can be linked to it" icon="symbol-pricetags-outline plugin-ionicons-api">
+                <a href="../configure" class="jenkins-button"><l:icon src="symbol-add-outline plugin-ionicons-api"/>Configure Label</a>
+              </l:notice>
+            </j:when>
+            <j:otherwise>
+              <div class="llj__list">
+                <j:forEach var="label" items="${labels}">
+                  <span class="llj__list--item"><a href="${rootURL}/${label.url}">${label.displayName}</a></span>
                 </j:forEach>
-                <br/><br/>
-              </j:if>
-              
-              <j:if test="${!empty(group.triggeredJobs)}">
-                Triggered jobs (triggering job(s)):&#160;
-                <j:forEach var="triggeredjob" items="${group.triggeredJobs}" varStatus="outerLoopStatus">
-                  <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a>&#160;(<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}" varStatus="innerLoopStatus">
-                    <a href="${triggeringJob.absoluteUrl}">${triggeringJob.name}</a>
-                    <j:if test="${!innerLoopStatus.last}">,&#160;</j:if>
-                  </j:forEach>)<j:if test="${!outerLoopStatus.last}">,&#160;</j:if>
+              </div>
+            </j:otherwise>
+          </j:choose>
+        </div>
+        <div>
+          <h2>Linked jobs</h2>
+          <j:set var="groups" value="${it.linkedJobs}" />
+          <j:choose>
+            <j:when test="${empty(groups)}">
+              <l:notice title="There are no jobs that are linked to this agent, based on label configuration."
+                        icon="symbol-search-outline plugin-ionicons-api"/>
+            </j:when>
+            <j:otherwise>
+              <div class="llj-card-list">
+                <j:forEach var="group" items="${groups}">
+                  <l:card title="Job${group.hasMoreThanOneJob ? 's' : ''} configured with ${group.label}" expandable="${rootURL}/${group.labelURL}">
+                    <j:if test="${it.detailedView  and !empty(group.jobs)}">
+                      <t:projectView jobs="${group.jobs}"/>
+                    </j:if>
+                    <j:if test="${!it.detailedView  and !empty(group.jobs)}">
+                      <div class="llj__list">
+                        <j:forEach var="job" items="${group.jobs}">
+                          <span><a href="${job.absoluteUrl}">${job.name}</a></span>
+                        </j:forEach>
+                      </div>
+                    </j:if>
+
+                    <div class="llj-jobs_list__container">
+                      <j:if test="${!empty(group.triggeredJobs)}">
+                        <div>Triggered jobs (triggering job(s)):
+                          <div class="llj__list">
+                            <j:forEach var="triggeredjob" items="${group.triggeredJobs}">
+                              <span class="llj__list--item">
+                                <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a> (<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}">
+                                <a href="${triggeringJob.absoluteUrl}">${triggeringJob.name}</a>
+                              </j:forEach>)
+                              </span>
+                            </j:forEach>
+                          </div>
+                        </div>
+                      </j:if>
+
+                      <j:if test="${!empty(group.jobsWithLabelDefaultValue)}">
+                        <div>Job(s) using this label as default value for a Label parameter:
+                          <div class="llj__list">
+                            <j:forEach var="job" items="${group.jobsWithLabelDefaultValue}">
+                              <span><a href="${job.absoluteUrl}">${job.name}</a></span>
+                            </j:forEach>
+                          </div>
+                        </div>
+                      </j:if>
+                    </div>
+                  </l:card>
                 </j:forEach>
-                <br/><br/>
-              </j:if>
+              </div>
+            </j:otherwise>
+          </j:choose>
+        </div>
+        <j:if test="${it.showSingleNodeJobs}">
+          <div>
+            <h2>Exclusive jobs</h2>
+            <j:set var="exclusiveGroups" value="${it.getExclusiveJobs(groups)}" />
+            <j:choose>
+              <j:when test="${empty(exclusiveGroups)}">
+                <l:notice title="There are no single-agent jobs that can run only on this agent. Well done with your configuration!"
+                          icon="symbol-search-outline plugin-ionicons-api"/>
+              </j:when>
+              <j:otherwise>
+                <div class="jenkins-alert jenkins-alert-warning">
+                  The following job(s) can run only on this node because of label (mis-)configuration, so you may have trouble if it goes down.
+                </div>
+                <div class="llj-card-list">
+                  <j:forEach var="group" items="${exclusiveGroups}">
+                    <l:card title="Job${group.hasMoreThanOneJob ? 's' : ''} configured with ${group.label}" expandable="${rootURL}/${group.labelURL}">
+                      <j:if test="${it.detailedView  &amp;&amp; !empty(group.jobs)}">
+                        <t:projectView jobs="${group.jobs}"/>
+                      </j:if>
+                      <j:if test="${!it.detailedView  &amp;&amp; !empty(group.jobs)}">
+                        <div class="llj__list">
+                          <j:forEach var="job" items="${group.jobs}">
+                            <a href="${job.absoluteUrl}">${job.name}</a>
+                          </j:forEach>
+                        </div>
+                      </j:if>
 
-              <j:if test="${!empty(group.jobsWithLabelDefaultValue)}">
-                <j:forEach var="job" items="${group.jobsWithLabelDefaultValue}" varStatus="loopStatus">
-                  <j:if test="${loopStatus.first}">By default value:&#160;</j:if>
-                  <a href="${job.absoluteUrl}">${job.name}</a><j:if test="${!loopStatus.last}">,&#160;</j:if>
-                </j:forEach>
-              </j:if>
+                      <div class="llj-jobs_list__container">
+                        <j:if test="${!empty(group.triggeredJobs)}">
+                          <div>Triggered jobs (triggering job(s)):
+                            <div class="llj__list">
+                              <j:forEach var="triggeredjob" items="${group.triggeredJobs}">
+                                <span class="llj__list--item">
+                                  <a href="${triggeredjob.triggeredJob.absoluteUrl}">${triggeredjob.triggeredJob.name}</a> (<j:forEach var="triggeringJob" items="${triggeredjob.triggeringJobs}">
+                                  <a href="${triggeringJob.absoluteUrl}">${triggeringJob.name}</a>
+                                  </j:forEach>)
+                                </span>
+                              </j:forEach>
+                            </div>
+                          </div>
+                        </j:if>
 
-            </j:forEach>
-          </j:otherwise>
-        </j:choose>
-        
-      </j:if>
-
+                        <j:if test="${!empty(group.jobsWithLabelDefaultValue)}">
+                          <div>By default value:
+                            <div class="llj__list">
+                              <j:forEach var="job" items="${group.jobsWithLabelDefaultValue}" varStatus="loopStatus">
+                                <span><a href="${job.absoluteUrl}">${job.name}</a></span>
+                              </j:forEach>
+                            </div>
+                          </div>
+                        </j:if>
+                      </div>
+                    </l:card>
+                  </j:forEach>
+                </div>
+              </j:otherwise>
+            </j:choose>
+          </div>
+        </j:if>
+      </div>
     </l:main-panel>
   </l:layout>
 </j:jelly>
