@@ -15,6 +15,7 @@ This plugin can list all the labels and related jobs.
 ## Table of Contents
 
 - [Get started](#get-started)
+- [Configuration](#configuration)
 - [API](#api)
   - [Endpoint](#endpoint)
   - [Example request](#example-request)
@@ -25,6 +26,24 @@ This plugin can list all the labels and related jobs.
 ## Get started
 
 [jcli](https://github.com/jenkins-zh/jenkins-cli) could help you upload this plugin into your Jenkins. The command is `jcli plugin upload`.
+
+## Configuration
+
+The settings are on their own page: **Manage Jenkins > Label Linked Jobs**. Users with Overall/Manage can change
+them; users with Overall/SystemRead see them read-only. The page also links to the Labels Dashboard.
+
+| Setting | What it does |
+| --- | --- |
+| Linked Jobs - Detailed projects list | Uncheck to see a condensed list of the projects on the Linked Jobs pages |
+| Labels Dashboard - Detailed projects list | Uncheck to see condensed lists of jobs on the Labels Dashboard |
+| Labels Dashboard - Label-less jobs | Check to list the jobs with no labels on the Labels Dashboard |
+| List single-node/exclusive jobs | Check to list the jobs that can run on only one node (Labels Dashboard, Linked Jobs for nodes) |
+
+> **Deprecated location:** earlier versions showed these settings in a "Linked Jobs Plugin Configuration" section of
+> **Manage Jenkins > System** (Configure System). That section is gone. Saved values carry over unchanged, as they are
+> stored in the same file (`jenkins.plugins.linkedjobs.settings.GlobalSettings.xml`). If you manage Jenkins with
+> Configuration as Code, check your YAML after upgrading: the settings are no longer in the `unclassified` category
+> (Configuration as Code support itself is tracked in #27).
 
 ## API
 

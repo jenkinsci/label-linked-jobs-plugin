@@ -1,0 +1,42 @@
+<?jelly escape-by-default='true'?>
+<!--
+  The Label Linked Jobs page under Manage Jenkins: the plugin settings and a link to the
+  Labels Dashboard. Read-only for users without Overall/Manage.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+  <l:layout title="${it.displayName}" permissions="${app.MANAGE_AND_SYSTEM_READ}" type="one-column">
+    <j:set var="readOnlyMode" value="${!app.hasPermission(app.MANAGE)}"/>
+    <l:main-panel>
+      <l:app-bar title="${it.displayName}"/>
+
+      <div class="behavior-loading">
+        <l:spinner text="${%Loading}"/>
+      </div>
+
+      <f:form method="post" name="config" action="configure" class="jenkins-form">
+        <j:set var="descriptor" value="${it.settings}"/>
+        <j:set var="instance" value="${descriptor}"/>
+        <f:rowSet name="${descriptor.jsonSafeClassName}">
+          <st:include page="${descriptor.globalConfigPage}" from="${descriptor}"/>
+        </f:rowSet>
+
+        <f:section title="${%Quick links}">
+          <f:entry>
+            <a href="${rootURL}/${it.dashboardUrl}/" class="jenkins-button">${%Open Labels Dashboard}</a>
+          </f:entry>
+        </f:section>
+
+        <l:hasAdministerOrManage>
+          <f:bottomButtonBar>
+            <f:submit value="${%Save}"/>
+            <f:apply/>
+          </f:bottomButtonBar>
+        </l:hasAdministerOrManage>
+      </f:form>
+
+      <l:hasAdministerOrManage>
+        <st:adjunct includes="lib.form.confirm"/>
+      </l:hasAdministerOrManage>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
