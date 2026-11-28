@@ -24,15 +24,16 @@
 
 package jenkins.plugins.linkedjobs.settings;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import jenkins.model.GlobalConfiguration;
+import jenkins.model.GlobalConfigurationCategory;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * The role of this class is to act as a central point for all things related to the
- * global configuration of the plugin, i.e. mainly the section shown in the
- * Manage Jenkins\Configure System page.
+ * global configuration of the plugin, shown on the Manage Jenkins\Label Linked Jobs page.
  * @author dominiquebrice
  */
 @Extension
@@ -78,6 +79,16 @@ public class GlobalSettings extends GlobalConfiguration {
      */
     public static GlobalSettings get() {
         return GlobalConfiguration.all().get(GlobalSettings.class);
+    }
+
+    /**
+     * Shows these settings on the Label Linked Jobs page under Manage Jenkins
+     * ({@link LabelLinkedJobsManagement}) instead of Configure System.
+     */
+    @NonNull
+    @Override
+    public GlobalConfigurationCategory getCategory() {
+        return GlobalConfigurationCategory.get(LabelLinkedJobsCategory.class);
     }
 
     @Override
